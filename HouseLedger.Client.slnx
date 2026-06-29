@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="HouseLedger.Client/HouseLedger.Client.csproj" />
+  <Project Path="HouseLedger.Server/HouseLedger.Server.csproj" />
+  <Project Path="HouseLedger.Shared/HouseLedger.Shared.csproj" />
+  <Project Path="HouseLedger.Tests/HouseLedger.Tests.csproj" />
+</Solution>
