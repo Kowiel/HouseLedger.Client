@@ -1,4 +1,7 @@
 
+using HouseLedger.Server.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace HouseLedger.Server
 {
     public class Program
@@ -7,9 +10,31 @@ namespace HouseLedger.Server
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            var envFile = builder.Environment.IsDevelopment()
+                ? ".env.development"
+                : ".env";
+
+            builder.Configuration.AddInMemoryCollection(ReadEnvFile(envFile));
 
             builder.Services.AddControllers();
+
+            var dbHost = builder.Configuration["POSTGRES:HOST"]; Console.WriteLine(dbHost);
+            var dbPort = builder.Configuration["POSTGRES:PORT"]; Console.WriteLine(dbPort);
+            var dbName = builder.Configuration["POSTGRES:DB"]; Console.WriteLine(dbName);
+            var dbUser = builder.Configuration["POSTGRES:USER"]; Console.WriteLine(dbUser);
+            var dbPassword = builder.Configuration["POSTGRES:PASSWORD"]; Console.WriteLine(dbPassword);
+
+            if (string.IsNullOrWhiteSpace(dbPassword))
+            {
+                throw new InvalidOperationException(
+                    $"Database password is missing. Environment: {builder.Environment.EnvironmentName}. File tried: {envFile}");
+            }
+
+            var connectionString =
+                $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
+
+            builder.Services.AddDbContext<HouseLedgerDbContext>(options =>
+                options.UseNpgsql(connectionString));
 
             builder.Services.AddCors(options =>
             {
@@ -26,7 +51,6 @@ namespace HouseLedger.Server
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -39,10 +63,63 @@ namespace HouseLedger.Server
 
             app.UseAuthorization();
 
-
             app.MapControllers();
 
             app.Run();
         }
+
+        private static Dictionary<string, string?> ReadEnvFile(string envFile)
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+
+            var possiblePaths = new[]
+            {
+    Path.Combine(currentDirectory, envFile),
+    Path.Combine(currentDirectory, ".env", envFile),
+
+    Path.Combine(currentDirectory, "..", envFile),
+    Path.Combine(currentDirectory, "..", ".env", envFile),
+
+    Path.Combine(currentDirectory, "..", "..", envFile),
+    Path.Combine(currentDirectory, "..", "..", ".env", envFile)
+};
+            var path = possiblePaths.FirstOrDefault(File.Exists);
+
+            if (path is null)
+            {
+                throw new FileNotFoundException($"Could not find env file: {envFile}");
+            }
+
+            var values = new Dictionary<string, string?>();
+
+            foreach (var line in File.ReadAllLines(path))
+            {
+                var trimmed = line.Trim();
+
+                if (string.IsNullOrWhiteSpace(trimmed) || trimmed.StartsWith("#"))
+                {
+                    continue;
+                }
+
+                var separatorIndex = trimmed.IndexOf('=');
+
+                if (separatorIndex <= 0)
+                {
+                    continue;
+                }
+
+                var key = trimmed[..separatorIndex]
+                    .Trim()
+                    .Replace("__", ":");
+
+                var value = trimmed[(separatorIndex + 1)..]
+                    .Trim()
+                    .Trim('"');
+
+                values[key] = value;
+            }
+
+            return values;
+        }
     }
-}
+    }
