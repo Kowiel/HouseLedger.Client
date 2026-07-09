@@ -1,5 +1,7 @@
-
 using HouseLedger.Server.Data;
+using HouseLedger.Server.ToolServices;
+using HouseLedger.Shared.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace HouseLedger.Server
@@ -18,11 +20,11 @@ namespace HouseLedger.Server
 
             builder.Services.AddControllers();
 
-            var dbHost = builder.Configuration["POSTGRES:HOST"]; Console.WriteLine(dbHost);
-            var dbPort = builder.Configuration["POSTGRES:PORT"]; Console.WriteLine(dbPort);
-            var dbName = builder.Configuration["POSTGRES:DB"]; Console.WriteLine(dbName);
-            var dbUser = builder.Configuration["POSTGRES:USER"]; Console.WriteLine(dbUser);
-            var dbPassword = builder.Configuration["POSTGRES:PASSWORD"]; Console.WriteLine(dbPassword);
+            var dbHost = builder.Configuration["POSTGRES:HOST"];
+            var dbPort = builder.Configuration["POSTGRES:PORT"];
+            var dbName = builder.Configuration["POSTGRES:DB"]; 
+            var dbUser = builder.Configuration["POSTGRES:USER"]; 
+            var dbPassword = builder.Configuration["POSTGRES:PASSWORD"];
 
             if (string.IsNullOrWhiteSpace(dbPassword))
             {
@@ -35,6 +37,21 @@ namespace HouseLedger.Server
 
             builder.Services.AddDbContext<HouseLedgerDbContext>(options =>
                 options.UseNpgsql(connectionString));
+
+
+            builder.Services.AddScoped<IToolService, ToolService>();
+
+
+
+
+
+
+            builder.Services
+                .AddIdentityCore<AppUser>()
+                .AddRoles<IdentityRole<Guid>>()
+                .AddEntityFrameworkStores<HouseLedgerDbContext>();
+
+            builder.Services.AddAuthorization();
 
             builder.Services.AddCors(options =>
             {
@@ -61,6 +78,7 @@ namespace HouseLedger.Server
 
             app.UseCors("AllowBlazorClient");
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

@@ -4,15 +4,15 @@ services:
     container_name: houseledger-postgres-dev
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES__DB}
+      POSTGRES_USER: ${POSTGRES__USER}
+      POSTGRES_PASSWORD: ${POSTGRES__PASSWORD}
     ports:
-      - "${POSTGRES_HOST_PORT}:5432"
+      - "${POSTGRES__PORT}:5432"
     volumes:
       - houseledger-postgres-dev-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES__USER} -d $${POSTGRES__DB}"]
       interval: 10s
       timeout: 5s
       retries: 5

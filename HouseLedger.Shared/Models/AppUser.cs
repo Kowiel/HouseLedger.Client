@@ -8,7 +8,7 @@ namespace HouseLedger.Shared.Models
     public class AppUser : IdentityUser<Guid>
     {
         // AppUser inherits these built-in fields from IdentityUser:
-        // string Id
+        // Guid Id
         // string? UserName
         // string? NormalizedUserName
         // string? Email
