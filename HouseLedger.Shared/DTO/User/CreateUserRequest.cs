@@ -1,10 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
 
-namespace HouseLedger.Shared.DTO
+namespace HouseLedger.Shared.DTO.User
 {
-    public class UpdateUserRequest
+    public class CreateUserRequest
     {
-
         [Required]
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
@@ -21,10 +23,12 @@ namespace HouseLedger.Shared.DTO
         [MaxLength(50)]
         public string LastName { get; set; } = string.Empty;
 
+        [Required]
         [MinLength(4), MaxLength(100)]
-        public string? DisplayName { get; set; }
+        public string? Username { get; set; }
 
         [Phone]
         public string? PhoneNumber { get; set; }
+
     }
 }

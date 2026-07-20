@@ -1,5 +1,6 @@
 using HouseLedger.Server.Data;
 using HouseLedger.Server.ToolServices;
+using HouseLedger.Server.UserService;
 using HouseLedger.Shared.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,7 @@ namespace HouseLedger.Server
 
 
             builder.Services.AddScoped<IToolService, ToolService>();
+            builder.Services.AddScoped<IUserCRUDService, UserCRUDService>();
 
 
 
