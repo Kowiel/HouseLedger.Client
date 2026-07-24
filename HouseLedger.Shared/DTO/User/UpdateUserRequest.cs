@@ -6,12 +6,23 @@ namespace HouseLedger.Shared.DTO.User
     {
 
         [Required]
+        [MinLength(4), MaxLength(100)]
+        public string? DisplayName { get; set; }
+
+        [Required]
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
 
         [Required]
         [MinLength(8)]
         public string Password { get; set; } = string.Empty;
+
+        [Required]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        public string RetypePassword { get; set; } = string.Empty;
+
+        [Phone]
+        public string? PhoneNumber { get; set; }
 
         [Required]
         [MaxLength(50)]
@@ -21,10 +32,5 @@ namespace HouseLedger.Shared.DTO.User
         [MaxLength(50)]
         public string LastName { get; set; } = string.Empty;
 
-        [MinLength(4), MaxLength(100)]
-        public string? DisplayName { get; set; }
-
-        [Phone]
-        public string? PhoneNumber { get; set; }
     }
 }
