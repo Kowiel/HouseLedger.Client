@@ -12,6 +12,7 @@ namespace HouseLedger.Shared.Models
         // send the id in the request body. This is because the id is a guid and it is not user friendly. 
 
         // AppUser inherits these built-in fields from IdentityUser:
+
         // Guid Id
         // string? UserName
         // string? NormalizedUserName
