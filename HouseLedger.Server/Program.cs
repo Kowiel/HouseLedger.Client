@@ -34,7 +34,7 @@ namespace HouseLedger.Server
             }
 
             var connectionString =
-                $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
+                $"Host={dbHost};Port={dbPort};Database={dbName};UserName={dbUser};Password={dbPassword}";
 
             builder.Services.AddDbContext<HouseLedgerDbContext>(options =>
                 options.UseNpgsql(connectionString));

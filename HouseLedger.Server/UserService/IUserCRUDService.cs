@@ -8,6 +8,8 @@ namespace HouseLedger.Server.UserService
         Task<bool> UpdateUser(UpdateUserRequest request);
         Task<bool> UpdateUserPassword(UpdateUserPasswordRequest request);
         Task<bool> DeleteUser(Guid userId);
+        Task<BasicUserInfo?> GetUserById(Guid userId);
+        Task<FullUserInfo?> GetFullUserById(Guid userId);
 
     }
 }

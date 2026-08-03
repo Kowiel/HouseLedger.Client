@@ -9,7 +9,7 @@ namespace HouseLedger.Shared.DTO.User
     {
         [Required]
         [MinLength(4), MaxLength(100)]
-        public string? Username { get; set; }
+        public string? UserName { get; set; }
 
         [Required]
         [EmailAddress]
