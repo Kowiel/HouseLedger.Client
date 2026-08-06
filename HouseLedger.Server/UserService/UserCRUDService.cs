@@ -49,19 +49,53 @@ namespace HouseLedger.Server.UserService
             return result.Succeeded;
         }
 
-        public Task<bool> DeleteUser(Guid userId)
+        public async Task<bool> DeleteUser(Guid userId)
         {
-            throw new NotImplementedException();
+           var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user is null)
+            {
+                return false;
+            }
+            var result = await _userManager.DeleteAsync(user);
+            return result.Succeeded;
         }
 
-        public Task<FullUserInfo?> GetFullUserById(Guid userId)
+        public async Task<FullUserInfo?> GetFullUserById(Guid userId)
         {
-            throw new NotImplementedException();
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            var fullUserInfo = user is null ? null : new FullUserInfo
+            {
+                Id= user.Id,
+                UserName = user.UserName,
+                NormalizedUserName = user.NormalizedUserName,
+                Email = user.Email,
+                NormalizedEmail = user.NormalizedEmail,
+                PhoneNumber = user.PhoneNumber,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                DisplayName = user.DisplayName,
+                CreatedDate = user.CreatedDate
+            };
+
+            return fullUserInfo;
         }
 
-        public Task<BasicUserInfo?> GetUserById(Guid userId)
+        public async Task<BasicUserInfo?> GetUserById(Guid userId)
         {
-            throw new NotImplementedException();
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            var basicUserInfo = user is null ? null : new BasicUserInfo
+            {
+                UserName = user.UserName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                DisplayName = user.DisplayName
+            };
+
+            return basicUserInfo;
         }
 
         public async Task<bool> UpdateUser(UpdateUserRequest request, Guid userId)
