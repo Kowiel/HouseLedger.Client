@@ -24,44 +24,44 @@ namespace HouseLedger.Server.Controllers
         public async Task<ActionResult<FullUserInfo>> GetUserInfoAsync([FromRoute] Guid userId)
         {
             var userInfo = await _userCrudService.GetFullUserById(userId);
-            if (userInfo == null)
+            if (userInfo.Success == false)
             {
-                return BadRequest("User not found.");
+                return BadRequest(userInfo.Message);
             }
-            return Ok(userInfo);
+            return Ok(userInfo.Data);
         }
 
         [HttpGet("getBasicUserInfo/{userId:guid}", Name = "GetBasicUserInfo")]
         public async Task<ActionResult<BasicUserInfo>> GetUserInfoBasicAsync([FromRoute] Guid userId)
         {
             var userInfo = await _userCrudService.GetUserById(userId);
-            if (userInfo == null)
+            if (userInfo.Success == false)
             {
-                return BadRequest("User not found.");
+                return BadRequest(userInfo.Message);
             }
-            return Ok(userInfo);
+            return Ok(userInfo.Data);
         }
 
         [HttpPost("createuser", Name = "CreateUser")]
         public async Task<ActionResult<bool>> CreateUserAsync([FromBody] CreateUserRequest request)
         {
             var result = await _userCrudService.CreateUser(request);
-            if (!result)
+            if (!result.Success)
             {
-                return BadRequest($"Failed to create user.");
+                return BadRequest(result.Message);
             }
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         [HttpDelete("deleteuser/{userId:guid}", Name = "DeleteUser")]
         public async Task<ActionResult<bool>> DeleteUserAsync([FromRoute] Guid userId)
         {
             var result = await _userCrudService.DeleteUser(userId);
-            if (!result)
+            if (!result.Success)
             {
-                return BadRequest("Failed to delete user. The user may not exist.");
+                return BadRequest(result.Message);
             }
-            return Ok(result);
+            return Ok(result.Data);
 
         }
 
@@ -69,21 +69,21 @@ namespace HouseLedger.Server.Controllers
         public async Task<ActionResult<bool>> UpdateUserAsync([FromRoute] Guid userId, [FromBody] UpdateUserRequest request)
         {
             var result = await _userCrudService.UpdateUser(request, userId);
-            if (!result)
+            if (!result.Success)
             {
-                return BadRequest("Failed to update user. The user may not exist.");
+                return BadRequest(result.Message);
             }
-            return Ok(result);
+            return Ok(result.Data);
         }
         [HttpPut("updateuserpassword/{userId:guid}", Name = "UpdateUserPassword")]
         public async Task<ActionResult<bool>> UpdateUserPasswordAsync([FromRoute] Guid userId, [FromBody] UpdateUserPasswordRequest request)
         {
             var result = await _userCrudService.UpdateUserPassword(request, userId);
-            if (!result)
+            if (!result.Success)
             {
-                return BadRequest("Failed to update user password. The user may not exist.");
+                return BadRequest(result.Message);
             }
-            return Ok(result);
+            return Ok(result.Data);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using HouseLedger.Server.Data;
 using HouseLedger.Shared.DTO.User;
 using HouseLedger.Shared.Models;
+using HouseLedger.Shared.Response;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.EntityFrameworkCore;
@@ -19,11 +20,11 @@ namespace HouseLedger.Server.UserService
             _dbContext = dbContext;
             _userManager = userManager;
         }
-        public async Task<bool> CreateUser(CreateUserRequest request)
+        public async Task<ServiceResponse<bool>> CreateUser(CreateUserRequest request)
         {
             if (await IsDistinctUser(request.Email, request.UserName) == false)
             {
-                return false;
+                return new ServiceResponse<bool> { Data = false, Success = false, Message = "User with the same email or username already exists." };
             }
 
             var newUser = new AppUser
@@ -43,24 +44,28 @@ namespace HouseLedger.Server.UserService
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                 Debug.WriteLine($"Failed to create user: {errors}");
-                return false;
+                return new ServiceResponse<bool> { Data = false, Success = false, Message = $"Failed to create user: {errors}" };
             }
 
-            return result.Succeeded;
+            return new ServiceResponse<bool> { Data = true, Success = true, Message = "User created successfully." };
         }
 
-        public async Task<bool> DeleteUser(Guid userId)
+        public async Task<ServiceResponse<bool>> DeleteUser(Guid userId)
         {
            var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user is null)
             {
-                return false;
+                return new ServiceResponse<bool> { Data = false, Success = false, Message = "User not found." };
             }
             var result = await _userManager.DeleteAsync(user);
-            return result.Succeeded;
+            if (!result.Succeeded)
+            {
+                return new ServiceResponse<bool> { Data = false, Success = false, Message = $"Failed to delete user: {result.Errors}" };
+            }
+            return new ServiceResponse<bool> { Data = true, Success = true, Message = "User deleted successfully." };
         }
 
-        public async Task<FullUserInfo?> GetFullUserById(Guid userId)
+        public async Task<ServiceResponse<FullUserInfo?>> GetFullUserById(Guid userId)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
@@ -78,10 +83,10 @@ namespace HouseLedger.Server.UserService
                 CreatedDate = user.CreatedDate
             };
 
-            return fullUserInfo;
+            return new ServiceResponse<FullUserInfo?> { Data = fullUserInfo, Success = fullUserInfo != null ? true : false, Message = fullUserInfo != null ? "User found." : "User not found." };
         }
 
-        public async Task<BasicUserInfo?> GetUserById(Guid userId)
+        public async Task<ServiceResponse<BasicUserInfo?>> GetUserById(Guid userId)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
@@ -95,16 +100,16 @@ namespace HouseLedger.Server.UserService
                 DisplayName = user.DisplayName
             };
 
-            return basicUserInfo;
+            return new ServiceResponse<BasicUserInfo?> { Data = basicUserInfo, Success = basicUserInfo != null ? true : false, Message = basicUserInfo != null ? "User found." : "User not found." };
         }
 
-        public async Task<bool> UpdateUser(UpdateUserRequest request, Guid userId)
+        public async Task<ServiceResponse<bool>> UpdateUser(UpdateUserRequest request, Guid userId)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
             if (user is null)
             {
-                return false;
+                return new ServiceResponse<bool> { Data = false, Success = false, Message = "User not found." };
             }
 
 
@@ -115,21 +120,21 @@ namespace HouseLedger.Server.UserService
            
             var result = await _userManager.UpdateAsync(user);
 
-            return result.Succeeded;
+            return new ServiceResponse<bool> { Data = result.Succeeded, Success = result.Succeeded, Message = result.Succeeded ? "User updated successfully." : $"Failed to update user: {string.Join(", ", result.Errors.Select(e => e.Description))}" };
 
         }
 
-        public async Task<bool> UpdateUserPassword(UpdateUserPasswordRequest request, Guid userId)
+        public async Task<ServiceResponse<bool>> UpdateUserPassword(UpdateUserPasswordRequest request, Guid userId)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
             if (user is null)
             {
-                return false;
+                return new ServiceResponse<bool> { Data = false, Success = false, Message = "User not found." };
             }
             var result = await _userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
 
-            return result.Succeeded;
+            return new ServiceResponse<bool> { Data = result.Succeeded, Success = result.Succeeded, Message = result.Succeeded ? "User password updated successfully." : $"Failed to update user password: {string.Join(", ", result.Errors.Select(e => e.Description))}" };
         }
 
 
