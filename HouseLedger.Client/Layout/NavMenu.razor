@@ -1,9 +1,87 @@
-﻿<MudNavMenu>
-    <MudNavLink Href="/" Match="NavLinkMatch.All">Dashboard</MudNavLink>
-    <MudNavLink Href="/counter" Match="NavLinkMatch.Prefix">Counter</MudNavLink>
-    <MudNavGroup Title="Settings" Expanded="true">
-        <MudNavLink Href="/thetest" Match="NavLinkMatch.Prefix">thetest</MudNavLink>
-        <MudNavLink Href="/weather" Match="NavLinkMatch.Prefix">Weather</MudNavLink>
-    </MudNavGroup>
-    <MudNavLink Href="/counter" Match="NavLinkMatch.Prefix">Counter</MudNavLink>
-</MudNavMenu>
+﻿<div class="nav-sections">
+
+    <div class="nav-center">
+
+        @* Main navigation *@
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+
+            <MudStack Row="true"
+                      Spacing="4"
+                      AlignItems="AlignItems.Center">
+
+                <MudButton Href="/">Home</MudButton>
+                <MudButton Href="/tools">Tools</MudButton>
+                <MudButton Href="/rooms">Rooms</MudButton>
+                <MudButton Href="/contacts">Contacts</MudButton>
+
+            </MudStack>
+
+        </MudHidden>
+
+    </div>
+
+
+    <div class="nav-right">
+
+        @* Full Settings/User *@
+        <MudHidden Breakpoint="Breakpoint.MdAndDown">
+
+            <MudStack Row="true"
+                      Spacing="2"
+                      AlignItems="AlignItems.Center">
+
+                <MudIconButton Icon="@Icons.Material.Filled.Settings"
+                               Href="/settings" />
+
+                <MudIconButton Icon="@Icons.Material.Filled.AccountCircle"
+                               Href="/userprofile" />
+
+            </MudStack>
+
+        </MudHidden>
+
+
+        @* Medium: Settings/User collapse *@
+        <MudHidden Breakpoint="Breakpoint.LgAndUp">
+
+            <MudHidden Breakpoint="Breakpoint.SmAndDown">
+
+                <MudMenu Icon="@Icons.Material.Filled.Menu">
+
+                    <MudMenuItem Href="/settings">
+                        Settings
+                    </MudMenuItem>
+
+                    <MudMenuItem Href="/userprofile">
+                        User Profile
+                    </MudMenuItem>
+
+                </MudMenu>
+
+            </MudHidden>
+
+        </MudHidden>
+
+
+        @* Small: everything collapses *@
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+
+            <MudMenu Icon="@Icons.Material.Filled.Menu">
+
+                <MudMenuItem Href="/">Home</MudMenuItem>
+                <MudMenuItem Href="/tools">Tools</MudMenuItem>
+                <MudMenuItem Href="/rooms">Rooms</MudMenuItem>
+                <MudMenuItem Href="/contacts">Contacts</MudMenuItem>
+
+                <MudDivider />
+
+                <MudMenuItem Href="/settings">Settings</MudMenuItem>
+                <MudMenuItem Href="/userprofile">User Profile</MudMenuItem>
+
+            </MudMenu>
+
+        </MudHidden>
+
+    </div>
+
+</div>

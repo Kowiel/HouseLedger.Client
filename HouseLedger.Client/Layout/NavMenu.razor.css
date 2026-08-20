@@ -1,0 +1,22 @@
+.nav-sections {
+    display: contents;
+}
+
+.nav-center {
+    justify-self: center;
+}
+
+.nav-right {
+    justify-self: end;
+    display: flex;
+    align-items: center;
+}
+
+.nav-center ::deep .mud-button {
+    color: pink;
+    text-transform: none;
+}
+
+    .nav-center ::deep .mud-button:hover {
+        background-color: pink;
+    }
