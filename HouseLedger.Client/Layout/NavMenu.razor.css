@@ -13,10 +13,28 @@
 }
 
 .nav-center ::deep .mud-button {
-    color: pink;
+    color: whitesmoke;
     text-transform: none;
+    font-weight: 600;
+    font-size: 1.4rem;
+    border-radius: 38%;
+    corner-shape: squircle; /*The system says it dosent know corner shape but its suported by all newer chromiums*/
 }
 
     .nav-center ::deep .mud-button:hover {
-        background-color: pink;
+        background-color: #3b369c;
+        color: white;
     }
+
+    .nav-right ::deep .mud-icon-button {
+        color: whitesmoke;
+        border-radius: 38%;
+        corner-shape: squircle; 
+    }
+
+        .nav-right ::deep .mud-icon-button:hover {
+            background-color: #3b369c;
+            color: white;
+        }
+
+

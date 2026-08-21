@@ -1,0 +1,168 @@
+﻿.register-page {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3.5rem 1.25rem 4rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.register-page::before,
+.register-page::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.register-page::before {
+    width: 26rem;
+    height: 26rem;
+    background: rgba(93, 135, 255, 0.18);
+    top: 3rem;
+    left: -13rem;
+    filter: blur(2px);
+}
+
+.register-page::after {
+    width: 22rem;
+    height: 22rem;
+    background: rgba(255, 174, 82, 0.14);
+    right: -10rem;
+    bottom: 2rem;
+}
+
+.register-heading,
+::deep .RegisterForm,
+.already-account {
+    position: relative;
+    z-index: 1;
+}
+
+.register-heading {
+    text-align: center;
+    color: white;
+    margin-bottom: 2rem;
+}
+
+.welcome-icon {
+    width: 3.75rem;
+    height: 3.75rem;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 1rem;
+    border-radius: 1.2rem;
+    color: #fff;
+    background: linear-gradient(135deg, #6c8cff, #a16eff);
+    box-shadow: 0 0.75rem 2rem rgba(64, 82, 190, 0.4);
+}
+
+.title {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.subtitle {
+    color: rgba(255, 255, 255, 0.72);
+    margin-top: 0.45rem;
+}
+
+::deep .RegisterForm {
+    width: 100%;
+    max-width: 760px;
+}
+
+::deep .register-card {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.97);
+    overflow: hidden;
+}
+
+::deep .register-card-content {
+    padding: 2rem 2rem 1.5rem;
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: #3f51b5;
+    margin-bottom: 1.25rem;
+}
+
+.section-heading .mud-typography-caption {
+    color: #737887;
+}
+
+.password-heading {
+    margin-top: 2rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.25rem;
+}
+
+.form-grid > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+}
+
+::deep .mud-input-adornment {
+    color: #6574c4;
+}
+
+::deep .register-actions {
+    justify-content: flex-end;
+    padding: 0 2rem 2rem;
+}
+
+::deep .register-button {
+    border-radius: 0.7rem;
+    padding: 0.7rem 1.35rem;
+    font-weight: 600;
+    box-shadow: 0 0.45rem 1rem rgba(63, 81, 181, 0.28);
+}
+
+.already-account {
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 1.35rem;
+}
+
+.already-account a {
+    color: white;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.already-account a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .register-page {
+        padding-top: 2.25rem;
+    }
+
+    ::deep .register-card-content {
+        padding: 1.5rem 1.25rem 1rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-grid > :last-child:nth-child(odd) {
+        grid-column: auto;
+    }
+
+    ::deep .register-actions {
+        padding: 0 1.25rem 1.5rem;
+    }
+
+    ::deep .register-button {
+        width: 100%;
+    }
+}

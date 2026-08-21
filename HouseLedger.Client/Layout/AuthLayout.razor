@@ -1,0 +1,28 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+
+    <MudAppBar Elevation="1">
+
+        <div class="nav-shell">
+
+            <div class="nav-left">
+                <MudText Typo="Typo.h5">
+                    <a class="Logo" href="/">HouseLedger</a>
+                </MudText>
+            </div>
+
+        </div>
+
+    </MudAppBar>
+
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+
+</MudLayout>
