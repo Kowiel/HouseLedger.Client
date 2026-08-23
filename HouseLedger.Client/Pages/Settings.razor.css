@@ -1,0 +1,176 @@
+.settings-page {
+    min-height: calc(100vh - 64px);
+    padding: 3rem 1.25rem 4rem;
+    position: relative;
+    overflow: hidden;
+    transition: background-color 180ms ease;
+}
+
+.settings-page::before,
+.settings-page::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.settings-page::before {
+    width: 28rem;
+    height: 28rem;
+    top: -10rem;
+    right: -10rem;
+    background: rgba(93, 135, 255, 0.16);
+}
+
+.settings-page::after {
+    width: 22rem;
+    height: 22rem;
+    bottom: -8rem;
+    left: -9rem;
+    background: rgba(255, 174, 82, 0.13);
+}
+
+.settings-heading,
+.settings-content {
+    position: relative;
+    z-index: 1;
+}
+
+.settings-heading {
+    max-width: 780px;
+    margin: 0 auto 2rem;
+    color: white;
+}
+
+.settings-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    display: grid;
+    place-items: center;
+    margin-bottom: 1rem;
+    border-radius: 1.1rem;
+    background: linear-gradient(135deg, #6c8cff, #a16eff);
+    box-shadow: 0 0.75rem 2rem rgba(64, 82, 190, 0.35);
+}
+
+.settings-title {
+    font-weight: 700;
+    letter-spacing: -0.04em;
+}
+
+.settings-subtitle {
+    color: rgba(255, 255, 255, 0.72);
+    margin-top: 0.4rem;
+}
+
+.settings-content {
+    max-width: 780px;
+    margin: 0 auto;
+}
+
+::deep .settings-card {
+    margin-bottom: 1.25rem;
+    border-radius: 1.15rem;
+    background: rgba(255, 255, 255, 0.97);
+    overflow: hidden;
+    transition: background-color 180ms ease, color 180ms ease;
+}
+
+::deep .settings-card-content {
+    padding: 1.75rem 2rem 1rem;
+}
+
+.settings-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: #3f51b5;
+    margin-bottom: 1rem;
+}
+
+.settings-section-heading .mud-typography-caption {
+    color: #737887;
+}
+
+.settings-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-top: 1px solid #eceef4;
+}
+
+.option-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 2.5rem;
+    display: grid;
+    place-items: center;
+    border-radius: 0.8rem;
+}
+
+.sms-icon { color: #3979d8; background: #e9f1ff; }
+.email-icon { color: #9c60d1; background: #f5eaff; }
+.summary-icon { color: #d18132; background: #fff2df; }
+.appearance-icon { color: #5364c2; background: #e9ebff; }
+
+.option-copy {
+    flex: 1;
+}
+
+.option-copy .mud-typography-subtitle1 {
+    font-weight: 600;
+}
+
+.option-copy .mud-typography-body2 {
+    color: #737887;
+    line-height: 1.45;
+}
+
+::deep .settings-option .mud-switch {
+    flex: 0 0 auto;
+}
+
+.settings-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.settings-note .mud-icon-root {
+    color: #a9e5bd;
+}
+
+.settings-dark::deep .settings-card {
+    background: #202638;
+    color: #f3f5ff;
+}
+
+.settings-dark .settings-option {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.settings-dark .option-copy .mud-typography-body2,
+.settings-dark .settings-section-heading .mud-typography-caption {
+    color: #b9c0d2;
+}
+
+@media (max-width: 600px) {
+    .settings-page {
+        padding: 2.25rem 1rem 3rem;
+    }
+
+    ::deep .settings-card-content {
+        padding: 1.35rem 1.25rem 0.75rem;
+    }
+
+    .settings-option {
+        gap: 0.7rem;
+    }
+
+    .option-icon {
+        display: none;
+    }
+}

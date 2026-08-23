@@ -1,0 +1,98 @@
+.not-found-page {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 1.25rem 5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.not-found-page::before,
+.not-found-page::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.not-found-page::before {
+    width: 30rem;
+    height: 30rem;
+    top: 4rem;
+    left: -15rem;
+    background: rgba(93, 135, 255, 0.18);
+}
+
+.not-found-page::after {
+    width: 24rem;
+    height: 24rem;
+    right: -11rem;
+    bottom: 1rem;
+    background: rgba(255, 174, 82, 0.15);
+}
+
+.not-found-orb,
+.error-label,
+.not-found-title,
+.not-found-message,
+::deep .home-button {
+    position: relative;
+    z-index: 1;
+}
+
+.not-found-orb {
+    width: 6.5rem;
+    height: 6.5rem;
+    display: grid;
+    place-items: center;
+    margin-bottom: 1.5rem;
+    border-radius: 2rem;
+    color: white;
+    background: linear-gradient(135deg, #6c8cff, #a16eff);
+    box-shadow: 0 1rem 2.5rem rgba(64, 82, 190, 0.4);
+    transform: rotate(-8deg);
+}
+
+.not-found-orb ::deep .mud-icon-root {
+    transform: rotate(8deg);
+}
+
+.error-label {
+    color: #d8dcff;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+}
+
+.not-found-title {
+    color: white;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    margin-top: 0.35rem;
+}
+
+.not-found-message {
+    max-width: 30rem;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.7;
+    margin: 0.75rem 0 1.75rem;
+}
+
+::deep .home-button {
+    border-radius: 0.7rem;
+    padding: 0.7rem 1.35rem;
+    font-weight: 600;
+    box-shadow: 0 0.45rem 1rem rgba(63, 81, 181, 0.28);
+}
+
+@media (max-width: 600px) {
+    .not-found-page {
+        padding-top: 2rem;
+    }
+
+    .not-found-title {
+        font-size: 2.25rem;
+    }
+}

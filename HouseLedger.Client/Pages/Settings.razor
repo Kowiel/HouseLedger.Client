@@ -2,10 +2,84 @@
 
 <PageTitle>Settings</PageTitle>
 
-<h3>Settings</h3>
+<div class="settings-page @(darkMode ? "settings-dark" : string.Empty)">
+    <div class="settings-heading">
+        <div class="settings-icon"><MudIcon Icon="@Icons.Material.Filled.Settings" /></div>
+        <MudText Typo="Typo.h3" Class="settings-title">Settings</MudText>
+        <MudText Typo="Typo.body1" Class="settings-subtitle">Make HouseLedger work the way you do.</MudText>
+    </div>
 
-<p>Here you can adjust your application settings.</p>
+    <div class="settings-content">
+        <MudCard Class="settings-card" Elevation="6">
+            <MudCardContent Class="settings-card-content">
+                <div class="settings-section-heading">
+                    <MudIcon Icon="@Icons.Material.Filled.NotificationsNone" />
+                    <div>
+                        <MudText Typo="Typo.h6">Notifications</MudText>
+                        <MudText Typo="Typo.caption">Choose how you want to receive updates.</MudText>
+                    </div>
+                </div>
+
+                <div class="settings-option">
+                    <div class="option-icon sms-icon"><MudIcon Icon="@Icons.Material.Filled.Sms" /></div>
+                    <div class="option-copy">
+                        <MudText Typo="Typo.subtitle1">SMS alerts</MudText>
+                        <MudText Typo="Typo.body2">Get important reminders and payment alerts by text.</MudText>
+                    </div>
+                    <MudSwitch @bind-Value="smsAlerts" Color="Color.Primary" />
+                </div>
+
+                <div class="settings-option">
+                    <div class="option-icon email-icon"><MudIcon Icon="@Icons.Material.Filled.Email" /></div>
+                    <div class="option-copy">
+                        <MudText Typo="Typo.subtitle1">Email alerts</MudText>
+                        <MudText Typo="Typo.body2">Receive updates about your household ledger by email.</MudText>
+                    </div>
+                    <MudSwitch @bind-Value="emailAlerts" Color="Color.Primary" />
+                </div>
+
+                <div class="settings-option">
+                    <div class="option-icon summary-icon"><MudIcon Icon="@Icons.Material.Filled.CalendarMonth" /></div>
+                    <div class="option-copy">
+                        <MudText Typo="Typo.subtitle1">Weekly summary</MudText>
+                        <MudText Typo="Typo.body2">Get a simple overview of your household activity each week.</MudText>
+                    </div>
+                    <MudSwitch @bind-Value="weeklySummary" Color="Color.Primary" />
+                </div>
+            </MudCardContent>
+        </MudCard>
+
+        <MudCard Class="settings-card" Elevation="6">
+            <MudCardContent Class="settings-card-content">
+                <div class="settings-section-heading">
+                    <MudIcon Icon="@Icons.Material.Filled.Tune" />
+                    <div>
+                        <MudText Typo="Typo.h6">Preferences</MudText>
+                        <MudText Typo="Typo.caption">Personalize your HouseLedger experience.</MudText>
+                    </div>
+                </div>
+
+                <div class="settings-option">
+                    <div class="option-icon appearance-icon"><MudIcon Icon="@Icons.Material.Filled.DarkMode" /></div>
+                    <div class="option-copy">
+                        <MudText Typo="Typo.subtitle1">Dark mode</MudText>
+                        <MudText Typo="Typo.body2">Use a darker color scheme that is easier on the eyes.</MudText>
+                    </div>
+                    <MudSwitch @bind-Value="darkMode" Color="Color.Primary" />
+                </div>
+            </MudCardContent>
+        </MudCard>
+
+        <div class="settings-note">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" />
+            <MudText Typo="Typo.body2">Your preferences are saved automatically.</MudText>
+        </div>
+    </div>
+</div>
 
 @code {
-
+    private bool smsAlerts = true;
+    private bool emailAlerts = true;
+    private bool weeklySummary;
+    private bool darkMode;
 }
