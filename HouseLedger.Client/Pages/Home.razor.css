@@ -1,0 +1,342 @@
+.home-page {
+    min-height: calc(100vh - 64px);
+    padding: 2.5rem 1.25rem 4rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.home-page::before,
+.home-page::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.home-page::before {
+    width: 32rem;
+    height: 32rem;
+    top: -13rem;
+    right: -10rem;
+    background: rgba(93, 135, 255, 0.16);
+}
+
+.home-page::after {
+    width: 24rem;
+    height: 24rem;
+    bottom: -10rem;
+    left: -10rem;
+    background: rgba(255, 174, 82, 0.13);
+}
+
+::deep .welcome-banner,
+.home-dashboard-grid {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+::deep .welcome-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 1.2rem;
+    color: white;
+    background: linear-gradient(120deg, rgba(71, 87, 180, 0.96), rgba(119, 77, 170, 0.95));
+    box-shadow: 0 0.9rem 2rem rgba(28, 38, 76, 0.2);
+}
+
+::deep .welcome-content,
+::deep .welcome-clock {
+    display: flex;
+    align-items: center;
+}
+
+::deep .welcome-content {
+    gap: 1rem;
+}
+
+::deep .welcome-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 3.5rem;
+    border-radius: 1.05rem;
+    color: #566bd3;
+    background: white;
+}
+
+::deep .welcome-label {
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+}
+
+::deep .welcome-title {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+::deep .welcome-subtitle {
+    color: rgba(255, 255, 255, 0.76);
+    margin-top: 0.25rem;
+}
+
+::deep .welcome-clock {
+    gap: 0.65rem;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.85rem;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+::deep .welcome-clock > .mud-icon-root {
+    font-size: 1.8rem;
+}
+
+::deep .welcome-clock .mud-typography-caption {
+    display: block;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+}
+
+.home-dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.75fr);
+    align-items: start;
+    gap: 1.25rem;
+}
+
+.home-side-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+::deep .dashboard-card {
+    min-width: 0;
+    padding: 1.5rem;
+    border-radius: 1.15rem;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 0.8rem 2rem rgba(28, 38, 76, 0.16);
+}
+
+::deep .dashboard-card-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.25rem;
+}
+
+::deep .dashboard-card-heading > .mud-chip {
+    margin-left: auto;
+}
+
+::deep .dashboard-card-icon {
+    width: 2.7rem;
+    height: 2.7rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 2.7rem;
+    border-radius: 0.85rem;
+}
+
+::deep .urgent-icon { color: #d18132; background: #fff2df; }
+::deep .statistics-icon { color: #3979d8; background: #e9f1ff; }
+::deep .lenders-icon { color: #9c60d1; background: #f5eaff; }
+
+::deep .dashboard-card-heading .mud-typography-caption {
+    display: block;
+    color: #737887;
+    margin-top: 0.15rem;
+}
+
+::deep .urgent-tool-list,
+::deep .late-lender-list {
+    display: flex;
+    flex-direction: column;
+}
+
+::deep .urgent-tool-row,
+::deep .late-lender-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 0;
+    border-top: 1px solid #eceef4;
+}
+
+::deep .urgent-tool-row {
+    border-left: 0.25rem solid transparent;
+    padding-left: 0.6rem;
+}
+
+::deep .urgent-tool-row.expired { border-left-color: #d84c4c; }
+::deep .urgent-tool-row.due-soon { border-left-color: #e3a529; }
+
+::deep .urgent-tool-icon {
+    width: 2.3rem;
+    height: 2.3rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 2.3rem;
+    border-radius: 0.7rem;
+    color: #6574c4;
+    background: #eef0ff;
+}
+
+::deep .urgent-tool-copy,
+::deep .urgent-tool-date,
+::deep .lender-copy {
+    min-width: 0;
+}
+
+::deep .urgent-tool-copy {
+    flex: 1;
+}
+
+::deep .urgent-tool-copy .mud-typography-caption,
+::deep .urgent-tool-date .mud-typography-caption,
+::deep .lender-copy .mud-typography-caption {
+    display: block;
+    color: #737887;
+}
+
+::deep .urgent-tool-date {
+    text-align: right;
+}
+
+::deep .urgent-tool-date .mud-typography-body2 {
+    font-weight: 600;
+}
+
+::deep .statistic-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.75rem;
+}
+
+::deep .statistic-toggle .mud-typography-caption {
+    color: #737887;
+}
+
+::deep .statistic-primary {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem;
+    border-radius: 0.9rem;
+    color: white;
+    background: linear-gradient(135deg, #5c73df, #8060c5);
+}
+
+::deep .statistic-primary.lent-highlight {
+    background: linear-gradient(135deg, #d6814c, #b95e82);
+}
+
+::deep .statistic-primary > .mud-icon-root {
+    font-size: 2rem;
+}
+
+::deep .statistic-primary .mud-typography-caption {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+::deep .statistic-primary .mud-typography-h3 {
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+::deep .statistic-period {
+    margin-left: auto;
+    align-self: flex-end;
+}
+
+::deep .statistic-secondary {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.55rem 1rem;
+    padding-top: 1rem;
+    color: #737887;
+    font-size: 0.82rem;
+}
+
+::deep .statistic-secondary strong {
+    color: #252a3a;
+}
+
+::deep .lender-rank {
+    width: 1.2rem;
+    color: #9aa0b2;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+::deep .lender-avatar {
+    width: 2.4rem;
+    height: 2.4rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 2.4rem;
+    border-radius: 50%;
+    color: white;
+    background: linear-gradient(135deg, #667eea, #8e6de0);
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+::deep .lender-copy {
+    flex: 1;
+}
+
+::deep .lender-chevron {
+    color: #9aa0b2;
+}
+
+@media (max-width: 800px) {
+    .home-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .home-page {
+        padding: 2rem 0.75rem 3rem;
+    }
+
+    ::deep .welcome-banner {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 1.25rem;
+    }
+
+    ::deep .welcome-clock {
+        align-self: stretch;
+    }
+
+    .home-side-column {
+        display: flex;
+    }
+
+    ::deep .dashboard-card {
+        padding: 1.25rem;
+    }
+
+    ::deep .urgent-tool-row {
+        flex-wrap: wrap;
+    }
+
+    ::deep .urgent-tool-date {
+        margin-left: 3rem;
+    }
+}

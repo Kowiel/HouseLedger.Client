@@ -1,0 +1,130 @@
+﻿@page "/tools"
+@using HouseLedger.Shared.Models
+
+<PageTitle>Tools</PageTitle>
+
+<div class="tools-page @(showPanel ? "panel-open" : "list-centered")">
+    <div class="tools-heading">
+        <div class="tools-page-icon"><MudIcon Icon="@Icons.Material.Filled.Handyman" /></div>
+        <div>
+            <MudText Typo="Typo.h3" Class="tools-title">Tools</MudText>
+            <MudText Typo="Typo.body1" Class="tools-subtitle">Keep track of what you own and where it is.</MudText>
+        </div>
+    </div>
+
+    <div class="tools-workspace @(showPanel ? "panel-open" : string.Empty)">
+        <ToolList Tools="tools"
+                  SelectedTool="selectedTool"
+                  OnToolSelected="OpenTool"
+                  OnAddTool="OpenAdd"
+                  OnRefresh="RefreshTools" />
+
+        @if (showPanel)
+        {
+            <div class="tool-panel">
+                <div class="tool-panel-toolbar">
+                    <MudText Typo="Typo.subtitle1">@(isAdding ? "New tool" : isEditing ? "Edit tool" : "Tool details")</MudText>
+                    <div>
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Inherit" Size="Size.Small" OnClick="RefreshTools" AriaLabel="Refresh tools" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" Size="Size.Small" OnClick="ClosePanel" AriaLabel="Close tool panel" />
+                    </div>
+                </div>
+
+                @if (isAdding)
+                {
+                    <AddTool OnSaved="AddTool" OnCancel="ClosePanel" />
+                }
+                else if (isEditing && selectedTool is not null)
+                {
+                    <EditTool Tool="selectedTool" OnSaved="UpdateTool" OnCancel="ClosePanel" />
+                }
+                else if (selectedTool is not null)
+                {
+                    <ToolDetail Tool="selectedTool" OnEdit="OpenEdit" OnClose="ClosePanel" />
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Tool> tools = CreateTools();
+    private Tool? selectedTool;
+    private bool showPanel;
+    private bool isAdding;
+    private bool isEditing;
+
+    private void OpenTool(Tool tool)
+    {
+        selectedTool = tool;
+        showPanel = true;
+        isAdding = false;
+        isEditing = false;
+    }
+
+    private void OpenAdd()
+    {
+        selectedTool = null;
+        showPanel = true;
+        isAdding = true;
+        isEditing = false;
+    }
+
+    private void OpenEdit()
+    {
+        if (selectedTool is not null)
+        {
+            isEditing = true;
+            isAdding = false;
+            showPanel = true;
+        }
+    }
+
+    private void ClosePanel()
+    {
+        showPanel = false;
+        isAdding = false;
+        isEditing = false;
+    }
+
+    private void RefreshTools()
+    {
+        tools = CreateTools();
+        selectedTool = null;
+        ClosePanel();
+    }
+
+    private void AddTool(Tool tool)
+    {
+        tools.Insert(0, tool);
+        selectedTool = tool;
+        isAdding = false;
+        showPanel = true;
+    }
+
+    private void UpdateTool(Tool updatedTool)
+    {
+        var index = tools.FindIndex(tool => tool.Id == updatedTool.Id);
+        if (index >= 0)
+        {
+            tools[index] = updatedTool;
+            selectedTool = updatedTool;
+        }
+
+        isEditing = false;
+        showPanel = true;
+    }
+
+    private static List<Tool> CreateTools() =>
+    [
+        new() { Id = Guid.NewGuid(), Name = "Cordless drill", Description = "18V compact drill", Brand = "Makita", Model = "DHP485", SerialNumber = "MK-20481", Room = new Room { Name = "Garage" } },
+        new() { Id = Guid.NewGuid(), Name = "Step ladder", Description = "6 ft. folding step ladder", Brand = "Werner", Model = "6006", Room = new Room { Name = "Garage" }, LentToContact = new Contact { DisplayName = "Alex Johnson" }, LentAt = DateTime.UtcNow.AddDays(-10) },
+        new() { Id = Guid.NewGuid(), Name = "Pressure washer", Description = "Electric pressure washer", Brand = "Karcher", Model = "K2", Room = new Room { Name = "Garden shed" }, Notes = "Store in the garage" },
+        new() { Id = Guid.NewGuid(), Name = "Circular saw", Description = "7-1/4 in. circular saw", Brand = "DeWalt", Model = "DWE575", Room = new Room { Name = "Garage" }, LentToContact = new Contact { DisplayName = "Morgan Lee" }, LentAt = DateTime.UtcNow.AddDays(-4) },
+        new() { Id = Guid.NewGuid(), Name = "Garden trimmer", Description = "Battery-powered trimmer", Brand = "Ryobi", Model = "P2009", Room = new Room { Name = "Garden shed" }, Notes = "Includes spare battery" },
+        new() { Id = Guid.NewGuid(), Name = "Socket set", Description = "84-piece mechanic socket set", Brand = "Craftsman", Model = "CMMT120", SerialNumber = "CR-91832", Room = new Room { Name = "Garage" } },
+        new() { Id = Guid.NewGuid(), Name = "Orbital sander", Description = "5 in. random orbital sander", Brand = "Bosch", Model = "ROS20VSC", Room = new Room { Name = "Garage" }, LentToContact = new Contact { DisplayName = "Taylor Smith" }, LentAt = DateTime.UtcNow.AddDays(-2) },
+        new() { Id = Guid.NewGuid(), Name = "Workbench vise", Description = "Heavy-duty bench vise", Brand = "Yost", Model = "LV-4", Room = new Room { Name = "Garage" } }
+    ];
+    }
+}

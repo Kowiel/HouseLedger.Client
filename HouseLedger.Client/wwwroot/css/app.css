@@ -1,9 +1,20 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: gray;
 }
 
 h1:focus {
     outline: none;
+}
+
+.center {
+    align-content: center;
+    text-align: center;
+}
+
+.title {
+    font-weight: bold;
+    margin-bottom: 1rem;
 }
 
 a, .btn-link {
@@ -13,6 +24,7 @@ a, .btn-link {
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;
+    background-color: #1b6ec2;
     border-color: #1861ac;
 }
 
@@ -21,7 +33,8 @@ a, .btn-link {
 }
 
 .content {
-    padding-top: 1.1rem;
+    margin-top: 1rem;
+    padding: 1rem;
 }
 
 .valid.modified:not([type=checkbox]) {

@@ -1,0 +1,58 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using HouseLedger.Shared.Models
+
+<div class="room-editor">
+    <div class="room-editor-heading">
+        <MudText Typo="Typo.h5">Add a room</MudText>
+        <MudText Typo="Typo.body2">Create a space for organizing your household tools.</MudText>
+    </div>
+
+    <EditForm Model="@model" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+        <div class="room-editor-form">
+            <MudTextField Label="Room name"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.MeetingRoom"
+                          @bind-Value="model.Name"
+                          For="@(() => model.Name)" />
+            <MudTextField Label="Description"
+                          Lines="3"
+                          Variant="Variant.Outlined"
+                          @bind-Value="model.Description"
+                          For="@(() => model.Description)" />
+        </div>
+        <div class="room-editor-actions">
+            <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="Cancel">Cancel</MudButton>
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Add room</MudButton>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<Room> OnSaved { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private RoomForm model = new();
+
+    private Task Save() => OnSaved.InvokeAsync(new Room
+    {
+        Id = Guid.NewGuid(),
+        Name = model.Name,
+        Description = model.Description
+    });
+
+    private Task Cancel() => OnCancel.InvokeAsync();
+
+    private sealed class RoomForm
+    {
+        [Required, MaxLength(100)]
+        public string Name { get; set; } = string.Empty;
+
+        [MaxLength(250)]
+        public string? Description { get; set; }
+    }
+
+}

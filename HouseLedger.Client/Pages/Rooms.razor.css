@@ -1,0 +1,421 @@
+.rooms-page {
+    min-height: calc(100vh - 64px);
+    padding: 2.5rem 1.25rem 4rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.rooms-page::before,
+.rooms-page::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.rooms-page::before {
+    width: 30rem;
+    height: 30rem;
+    top: -12rem;
+    right: -9rem;
+    background: rgba(93, 135, 255, 0.16);
+}
+
+.rooms-page::after {
+    width: 24rem;
+    height: 24rem;
+    bottom: -10rem;
+    left: -10rem;
+    background: rgba(255, 174, 82, 0.13);
+}
+
+.rooms-heading,
+.rooms-workspace {
+    position: relative;
+    z-index: 1;
+}
+
+.rooms-heading {
+    max-width: 1240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 0 auto 2rem;
+    color: white;
+    text-align: center;
+}
+
+.rooms-page-icon {
+    width: 3.75rem;
+    height: 3.75rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 3.75rem;
+    border-radius: 1.2rem;
+    background: linear-gradient(135deg, #6c8cff, #a16eff);
+    box-shadow: 0 0.75rem 2rem rgba(64, 82, 190, 0.35);
+}
+
+.rooms-title {
+    font-weight: 700;
+    letter-spacing: -0.04em;
+}
+
+.rooms-subtitle {
+    color: rgba(255, 255, 255, 0.72);
+    margin-top: 0.35rem;
+}
+
+.rooms-workspace {
+    max-width: 1240px;
+    display: grid;
+    grid-template-columns: minmax(0, 900px);
+    gap: 1.25rem;
+    margin: 0 auto;
+    transition: grid-template-columns 220ms ease;
+}
+
+.rooms-workspace.panel-open {
+    grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1.1fr);
+}
+
+.rooms-workspace:not(.panel-open) {
+    justify-content: center;
+}
+
+.room-tiles,
+.room-panel {
+    min-width: 0;
+    border-radius: 1.15rem;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 0.8rem 2rem rgba(28, 38, 76, 0.18);
+}
+
+.room-tiles {
+    padding: 1.5rem;
+}
+
+::deep .room-grid-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+::deep .room-grid-toolbar .mud-typography-caption {
+    color: #737887;
+}
+
+::deep .room-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+::deep .room-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+::deep .room-tile {
+    min-height: 11rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.15rem;
+    border: 1px solid #e8eaf2;
+    border-radius: 1rem;
+    color: #252a3a;
+    background: white;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+::deep .room-tile:hover,
+::deep .room-tile.selected {
+    border-color: #7887e5;
+    background: #f5f6ff;
+    box-shadow: 0 0.5rem 1.2rem rgba(82, 93, 190, 0.16);
+    transform: translateY(-3px);
+}
+
+::deep .room-tile-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    margin-bottom: 0.8rem;
+    border-radius: 0.85rem;
+    color: #6574c4;
+    background: #eef0ff;
+}
+
+::deep .room-tile-copy {
+    flex: 1;
+}
+
+::deep .room-tile-copy .mud-typography-h6 {
+    font-weight: 650;
+}
+
+::deep .room-tile-copy .mud-typography-body2 {
+    color: #737887;
+    line-height: 1.4;
+}
+
+::deep .room-tile-footer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    color: #737887;
+    font-size: 0.75rem;
+}
+
+::deep .room-tile-footer span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+::deep .room-tile-footer .mud-icon-root {
+    font-size: 1rem;
+}
+
+.room-panel {
+    overflow: hidden;
+}
+
+::deep .room-panel-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem 0.75rem 1.5rem;
+    color: white;
+    background: linear-gradient(135deg, #566bd3, #8060c5);
+}
+
+::deep .room-panel-toolbar > div {
+    display: flex;
+    gap: 0.15rem;
+}
+
+::deep .room-details,
+::deep .room-editor {
+    padding: 1.75rem 2rem 2rem;
+}
+
+::deep .room-details-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    text-align: center;
+}
+
+::deep .room-details-icon {
+    width: 5rem;
+    height: 5rem;
+    display: grid;
+    place-items: center;
+    margin-bottom: 0.85rem;
+    border-radius: 1.5rem;
+    color: white;
+    background: linear-gradient(135deg, #667eea, #8e6de0);
+    box-shadow: 0 0.5rem 1.2rem rgba(82, 93, 190, 0.3);
+}
+
+::deep .room-details-name,
+::deep .room-editor-heading .mud-typography-h5 {
+    font-weight: 700;
+}
+
+::deep .room-details-caption,
+::deep .room-editor-heading .mud-typography-body2 {
+    color: #737887;
+}
+
+::deep .room-detail-summary {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    padding: 1rem 0;
+    border-top: 1px solid #eceef4;
+    border-bottom: 1px solid #eceef4;
+}
+
+::deep .room-detail-summary > div {
+    display: grid;
+    grid-template-columns: auto auto;
+    column-gap: 0.45rem;
+    align-items: center;
+}
+
+::deep .room-detail-summary .mud-icon-root {
+    grid-row: span 2;
+    color: #6574c4;
+}
+
+::deep .room-detail-summary strong {
+    font-size: 1rem;
+}
+
+::deep .room-detail-summary span {
+    color: #737887;
+    font-size: 0.7rem;
+}
+
+::deep .room-tools-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 1.5rem 0 0.5rem;
+}
+
+::deep .room-tools-heading .mud-typography-subtitle1 {
+    font-weight: 650;
+}
+
+::deep .room-tools-heading .mud-typography-caption {
+    color: #737887;
+}
+
+::deep .room-tools-list {
+    max-height: 15rem;
+    overflow-y: auto;
+}
+
+::deep .room-tool-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem 0;
+    border-top: 1px solid #eceef4;
+}
+
+::deep .room-tool-icon {
+    width: 2.2rem;
+    height: 2.2rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 2.2rem;
+    border-radius: 0.65rem;
+    color: #6574c4;
+    background: #eef0ff;
+}
+
+::deep .room-tool-row .mud-typography-caption {
+    color: #737887;
+}
+
+::deep .room-tools-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem 1rem;
+    border-top: 1px solid #eceef4;
+    color: #737887;
+    text-align: center;
+}
+
+::deep .room-detail-actions,
+::deep .room-editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+::deep .room-editor-heading {
+    margin-bottom: 1.5rem;
+}
+
+::deep .room-editor-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+}
+
+::deep .room-detail-actions .mud-button,
+::deep .room-editor-actions .mud-button {
+    border-radius: 0.7rem;
+    font-weight: 600;
+}
+
+@media (max-width: 900px) {
+    ::deep .room-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .rooms-workspace,
+    .rooms-workspace.panel-open {
+        grid-template-columns: 1fr;
+    }
+
+    .room-panel {
+        order: -1;
+    }
+}
+
+@media (max-width: 520px) {
+    .rooms-page {
+        padding: 2rem 0.75rem 3rem;
+    }
+
+    .rooms-heading {
+        align-items: flex-start;
+    }
+
+    .rooms-page-icon {
+        width: 3rem;
+        height: 3rem;
+        flex-basis: 3rem;
+    }
+
+    .rooms-subtitle {
+        font-size: 0.9rem;
+    }
+
+    ::deep .room-tiles,
+    ::deep .room-details,
+    ::deep .room-editor {
+        padding-left: 1.15rem;
+        padding-right: 1.15rem;
+    }
+
+    ::deep .room-grid {
+        grid-template-columns: 1fr;
+    }
+
+    ::deep .room-grid-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    ::deep .room-toolbar-actions,
+    ::deep .room-toolbar-actions .mud-button {
+        width: 100%;
+    }
+
+    ::deep .room-toolbar-actions {
+        justify-content: space-between;
+    }
+
+    ::deep .room-detail-actions,
+    ::deep .room-editor-actions {
+        flex-direction: column-reverse;
+    }
+
+    ::deep .room-detail-actions .mud-button,
+    ::deep .room-editor-actions .mud-button {
+        width: 100%;
+    }
+}

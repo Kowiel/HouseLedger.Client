@@ -1,0 +1,62 @@
+<MudCard Class="profile-card contacts-card" Elevation="6">
+    <MudCardContent Class="profile-card-content">
+        <div class="card-heading">
+            <div class="card-icon contacts-icon"><MudIcon Icon="@Icons.Material.Filled.VerifiedUser" /></div>
+            <div>
+                <MudText Typo="Typo.h6">Verify your contacts</MudText>
+                <MudText Typo="Typo.caption">Verified contacts help keep your account secure.</MudText>
+            </div>
+        </div>
+
+        <div class="contact-row">
+            <div class="contact-type"><MudIcon Icon="@Icons.Material.Filled.Email" /></div>
+            <div class="contact-copy">
+                <MudText Typo="Typo.subtitle1">Email address</MudText>
+                <MudText Typo="Typo.body2">your.email@example.com</MudText>
+            </div>
+            @if (emailVerified)
+            {
+                <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Outlined">Verified</MudChip>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="VerifyEmail">Verify</MudButton>
+            }
+        </div>
+
+        <div class="contact-row">
+            <div class="contact-type"><MudIcon Icon="@Icons.Material.Filled.Phone" /></div>
+            <div class="contact-copy">
+                <MudText Typo="Typo.subtitle1">Phone number</MudText>
+                <MudText Typo="Typo.body2">+1 (555) 010-2040</MudText>
+            </div>
+            @if (phoneVerified)
+            {
+                <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Outlined">Verified</MudChip>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="VerifyPhone">Verify</MudButton>
+            }
+        </div>
+
+        <MudText Typo="Typo.caption" Class="verification-note">
+            <MudIcon Icon="@Icons.Material.Filled.Info" /> Verification actions will be connected to your account when contact services are enabled.
+        </MudText>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private bool emailVerified;
+    private bool phoneVerified;
+
+    private void VerifyEmail()
+    {
+        emailVerified = true;
+    }
+
+    private void VerifyPhone()
+    {
+        phoneVerified = true;
+    }
+}

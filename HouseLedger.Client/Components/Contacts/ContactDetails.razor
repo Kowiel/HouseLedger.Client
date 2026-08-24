@@ -1,0 +1,69 @@
+﻿@using HouseLedger.Shared.Models
+
+<div class="contact-details">
+    <div class="details-hero">
+        <div class="details-avatar">@GetInitials(Contact.DisplayName)</div>
+        <MudText Typo="Typo.h5" Class="details-name">@Contact.DisplayName</MudText>
+        <MudText Typo="Typo.body2" Class="details-caption">Household contact</MudText>
+    </div>
+
+    <div class="details-fields">
+        <div class="details-field">
+            <MudIcon Icon="@Icons.Material.Filled.Email" />
+            <div>
+                <MudText Typo="Typo.caption">Email address</MudText>
+                <MudText Typo="Typo.body1">@(Contact.Email ?? "Not provided")</MudText>
+            </div>
+        </div>
+        <div class="details-field">
+            <MudIcon Icon="@Icons.Material.Filled.Phone" />
+            <div>
+                <MudText Typo="Typo.caption">Phone number</MudText>
+                <MudText Typo="Typo.body1">@(Contact.PhoneNumber ?? "Not provided")</MudText>
+            </div>
+        </div>
+        <div class="details-field notes-field">
+            <MudIcon Icon="@Icons.Material.Filled.Notes" />
+            <div>
+                <MudText Typo="Typo.caption">Notes</MudText>
+                <MudText Typo="Typo.body1">@(string.IsNullOrWhiteSpace(Contact.Notes) ? "No notes added" : Contact.Notes)</MudText>
+            </div>
+        </div>
+    </div>
+
+    <div class="details-actions">
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Handyman" OnClick="ShowTools">Tools owned</MudButton>
+        <div class="details-primary-actions">
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.Close" OnClick="Close">Close</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" OnClick="Edit">Edit contact</MudButton>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Contact Contact { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public EventCallback OnTools { get; set; }
+
+    private Task Edit() => OnEdit.InvokeAsync();
+
+    private Task Close() => OnClose.InvokeAsync();
+
+    private Task ShowTools() => OnTools.InvokeAsync();
+
+    private static string GetInitials(string name)
+    {
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length > 1
+            ? string.Concat(parts[0][..1], parts[^1][..1]).ToUpperInvariant()
+            : (parts.FirstOrDefault()?[..1].ToUpperInvariant() ?? "?");
+    }
+}

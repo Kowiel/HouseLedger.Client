@@ -1,0 +1,65 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using HouseLedger.Shared.Models
+
+<div class="contact-editor">
+    <div class="editor-heading">
+        <MudText Typo="Typo.h5">Add a contact</MudText>
+        <MudText Typo="Typo.body2">Add someone to your household contacts.</MudText>
+    </div>
+
+    <EditForm Model="@model" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="editor-form">
+            <MudTextField Label="Display name" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Person"
+                          @bind-Value="model.DisplayName" For="@(() => model.DisplayName)" />
+            <MudTextField Label="Email address" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email"
+                          @bind-Value="model.Email" For="@(() => model.Email)" />
+            <MudTextField Label="Phone number" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Phone" InputType="InputType.Telephone"
+                          @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" />
+            <MudTextField Label="Notes" Lines="3" Variant="Variant.Outlined" Class="notes-input"
+                          @bind-Value="model.Notes" For="@(() => model.Notes)" />
+        </div>
+
+        <div class="editor-actions">
+            <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="Cancel">Cancel</MudButton>
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd">Add contact</MudButton>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<Contact> OnSaved { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private ContactForm model = new();
+
+    private Task Save() => OnSaved.InvokeAsync(new Contact
+    {
+        Id = Guid.NewGuid(),
+        DisplayName = model.DisplayName,
+        Email = model.Email,
+        PhoneNumber = model.PhoneNumber,
+        Notes = model.Notes
+    });
+
+    private Task Cancel() => OnCancel.InvokeAsync();
+
+    private sealed class ContactForm
+    {
+        [Required, MaxLength(100)]
+        public string DisplayName { get; set; } = string.Empty;
+
+        [EmailAddress, MaxLength(200)]
+        public string? Email { get; set; }
+
+        [Phone, MaxLength(40)]
+        public string? PhoneNumber { get; set; }
+
+        [MaxLength(500)]
+        public string? Notes { get; set; }
+    }
+}

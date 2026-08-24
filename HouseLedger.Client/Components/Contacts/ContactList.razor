@@ -1,0 +1,83 @@
+﻿@using HouseLedger.Shared.Models
+
+<section class="contact-list-card">
+    <div class="list-header">
+        <div>
+            <MudText Typo="Typo.h6">Your contacts</MudText>
+            <MudText Typo="Typo.caption">@Contacts.Count contact@(Contacts.Count == 1 ? string.Empty : "s")</MudText>
+        </div>
+        <div class="list-header-actions">
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Default" Size="Size.Small" OnClick="Refresh" AriaLabel="Refresh contacts" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="AddContact">Add contact</MudButton>
+        </div>
+    </div>
+
+    <MudTextField @bind-Value="searchTerm" Placeholder="Search contacts" Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" Margin="Margin.Dense" Class="contact-search" />
+
+    <div class="contact-list-items">
+        @if (!FilteredContacts.Any())
+        {
+            <div class="contact-list-empty">
+                <MudIcon Icon="@Icons.Material.Filled.PersonSearch" />
+                <MudText Typo="Typo.body2">No contacts match your search.</MudText>
+            </div>
+        }
+        else
+        {
+            @foreach (var contact in FilteredContacts)
+            {
+                <button type="button" class="contact-list-row @(SelectedContact?.Id == contact.Id ? "selected" : string.Empty)" @onclick="() => SelectContact(contact)">
+                    <span class="contact-avatar">@GetInitials(contact.DisplayName)</span>
+                    <span class="contact-row-copy">
+                        <span class="contact-name">@contact.DisplayName</span>
+                        <span class="contact-email">@(contact.Email ?? "No email address")</span>
+                    </span>
+                    <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Class="contact-chevron" />
+                </button>
+            }
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<Contact> Contacts { get; set; } = [];
+
+    [Parameter]
+    public Contact? SelectedContact { get; set; }
+
+    [Parameter]
+    public EventCallback<Contact> OnContactSelected { get; set; }
+
+    [Parameter]
+    public EventCallback OnAddContact { get; set; }
+
+    [Parameter]
+    public EventCallback OnRefresh { get; set; }
+
+    private string searchTerm = string.Empty;
+
+    private IEnumerable<Contact> FilteredContacts => Contacts
+        .Where(contact => string.IsNullOrWhiteSpace(searchTerm)
+            || contact.DisplayName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            || (contact.Email?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (contact.PhoneNumber?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
+
+    private Task SelectContact(Contact contact) => OnContactSelected.InvokeAsync(contact);
+
+    private Task AddContact() => OnAddContact.InvokeAsync();
+
+    private Task Refresh() => OnRefresh.InvokeAsync();
+
+    private static string GetInitials(string name)
+    {
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length switch
+        {
+            0 => "?",
+            1 => parts[0][..1].ToUpperInvariant(),
+            _ => string.Concat(parts[0][..1], parts[^1][..1]).ToUpperInvariant()
+        };
+    }
+}

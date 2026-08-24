@@ -1,0 +1,149 @@
+.login-page {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5rem 1.25rem 4rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-page::before,
+.login-page::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.login-page::before {
+    width: 26rem;
+    height: 26rem;
+    background: rgba(93, 135, 255, 0.18);
+    top: 3rem;
+    left: -13rem;
+}
+
+.login-page::after {
+    width: 22rem;
+    height: 22rem;
+    background: rgba(255, 174, 82, 0.14);
+    right: -10rem;
+    bottom: 2rem;
+}
+
+.login-heading,
+::deep .LoginForm,
+.new-account {
+    position: relative;
+    z-index: 1;
+}
+
+.login-heading {
+    text-align: center;
+    color: white;
+    margin-bottom: 2rem;
+}
+
+.welcome-icon {
+    width: 3.75rem;
+    height: 3.75rem;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 1rem;
+    border-radius: 1.2rem;
+    color: #fff;
+    background: linear-gradient(135deg, #6c8cff, #a16eff);
+    box-shadow: 0 0.75rem 2rem rgba(64, 82, 190, 0.4);
+}
+
+.title {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.subtitle {
+    color: rgba(255, 255, 255, 0.72);
+    margin-top: 0.45rem;
+}
+
+::deep .LoginForm {
+    width: 100%;
+    max-width: 460px;
+}
+
+::deep .login-card {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.97);
+    overflow: hidden;
+}
+
+::deep .login-card-content {
+    padding: 2rem 2rem 1.5rem;
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: #3f51b5;
+    margin-bottom: 1.5rem;
+}
+
+.section-heading .mud-typography-caption {
+    color: #737887;
+}
+
+::deep .password-field {
+    margin-top: 1.25rem;
+}
+
+::deep .mud-input-adornment {
+    color: #6574c4;
+}
+
+::deep .login-actions {
+    justify-content: flex-end;
+    padding: 0 2rem 2rem;
+}
+
+::deep .login-button {
+    border-radius: 0.7rem;
+    padding: 0.7rem 1.35rem;
+    font-weight: 600;
+    box-shadow: 0 0.45rem 1rem rgba(63, 81, 181, 0.28);
+}
+
+.new-account {
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 1.35rem;
+}
+
+.new-account a {
+    color: white;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.new-account a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .login-page {
+        padding-top: 2.25rem;
+    }
+
+    ::deep .login-card-content {
+        padding: 1.5rem 1.25rem 1rem;
+    }
+
+    ::deep .login-actions {
+        padding: 0 1.25rem 1.5rem;
+    }
+
+    ::deep .login-button {
+        width: 100%;
+    }
+}

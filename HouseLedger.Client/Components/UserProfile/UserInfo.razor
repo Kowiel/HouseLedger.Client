@@ -1,0 +1,65 @@
+﻿@using System.ComponentModel.DataAnnotations
+
+<MudCard Class="profile-card user-info-card" Elevation="6">
+    <MudCardContent Class="profile-card-content">
+        <div class="card-heading">
+            <div class="card-icon info-icon"><MudIcon Icon="@Icons.Material.Filled.PersonOutline" /></div>
+            <div>
+                <MudText Typo="Typo.h6">Personal information</MudText>
+                <MudText Typo="Typo.caption">Keep your account details up to date.</MudText>
+            </div>
+        </div>
+
+        <EditForm Model="@model" OnValidSubmit="SaveChanges">
+            <DataAnnotationsValidator />
+            <div class="profile-form-grid">
+                <MudTextField Label="First name" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Badge"
+                              @bind-Value="model.FirstName" For="@(() => model.FirstName)" />
+                <MudTextField Label="Last name" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Badge"
+                              @bind-Value="model.LastName" For="@(() => model.LastName)" />
+                <MudTextField Label="Username" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AccountCircle"
+                              @bind-Value="model.UserName" For="@(() => model.UserName)" />
+                <MudTextField Label="Phone number" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Phone"
+                              @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" InputType="InputType.Telephone" />
+                <MudTextField Label="Email address" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email"
+                              @bind-Value="model.Email" For="@(() => model.Email)" Class="full-width-field" />
+            </div>
+
+            <div class="card-footer">
+                @if (saved)
+                {
+                    <MudText Typo="Typo.caption" Class="saved-message"><MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" /> Changes saved</MudText>
+                }
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="profile-button">Save changes</MudButton>
+            </div>
+        </EditForm>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private UserInfoForm model = new();
+    private bool saved;
+
+    private void SaveChanges(EditContext context)
+    {
+        saved = true;
+    }
+
+    private sealed class UserInfoForm
+    {
+        [Required, MaxLength(50)]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required, MaxLength(50)]
+        public string LastName { get; set; } = string.Empty;
+
+        [Required, MinLength(4), MaxLength(100)]
+        public string UserName { get; set; } = "TestUser";
+
+        [Phone]
+        public string? PhoneNumber { get; set; }
+
+        [Required, EmailAddress]
+        public string Email { get; set; } = string.Empty;
+    }
+}

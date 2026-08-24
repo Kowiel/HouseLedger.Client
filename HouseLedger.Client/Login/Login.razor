@@ -1,0 +1,56 @@
+﻿@page "/login"
+@layout AuthLayout
+@using System.ComponentModel.DataAnnotations
+
+<div class="login-page">
+    <div class="login-heading">
+        <div class="welcome-icon"><MudIcon Icon="@Icons.Material.Filled.HomeWork" /></div>
+        <MudText Typo="Typo.h3" Class="title">Welcome back</MudText>
+        <MudText Typo="Typo.body1" Class="subtitle">Sign in to keep your household finances on track.</MudText>
+    </div>
+
+    <EditForm Class="LoginForm" Model="@model" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <MudCard Class="login-card" Elevation="8">
+            <MudCardContent Class="login-card-content">
+                <div class="section-heading">
+                    <MudIcon Icon="@Icons.Material.Filled.Login" />
+                    <div>
+                        <MudText Typo="Typo.h6">Sign in</MudText>
+                        <MudText Typo="Typo.caption">Use your HouseLedger account details</MudText>
+                    </div>
+                </div>
+
+                <MudTextField Label="Email" HelperText="Enter the email linked to your account"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email"
+                              @bind-Value="model.Email" For="@(() => model.Email)" />
+                <MudTextField Label="Password" Class="password-field"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock"
+                              @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
+            </MudCardContent>
+            <MudCardActions Class="login-actions">
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" Class="login-button">Sign in</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </EditForm>
+
+    <MudText Typo="Typo.caption" Class="new-account">New to HouseLedger? <a href="/register">Create an account</a></MudText>
+</div>
+
+@code {
+    private LoginForm model = new();
+
+    private void OnValidSubmit(EditContext context)
+    {
+    }
+
+    private sealed class LoginForm
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
+    }
+}

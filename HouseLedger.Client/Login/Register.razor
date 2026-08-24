@@ -1,0 +1,105 @@
+﻿@page "/register"
+@layout AuthLayout
+@using System.ComponentModel.DataAnnotations
+
+<div class="register-page">
+    <div class="register-heading">
+        <div class="welcome-icon"><MudIcon Icon="@Icons.Material.Filled.HomeWork" /></div>
+        <MudText Typo="Typo.h3" Class="title">Create your account</MudText>
+        <MudText Typo="Typo.body1" Class="subtitle">Bring your household Tool cabinet to one place, even those pesky lend out items.</MudText>
+    </div>
+
+    <EditForm Class="RegisterForm" Model="@model" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <MudCard Class="register-card" Elevation="8">
+            <MudCardContent Class="register-card-content">
+                <div class="section-heading">
+                    <MudIcon Icon="@Icons.Material.Filled.PersonOutline" />
+                    <div>
+                        <MudText Typo="Typo.h6">Your details</MudText>
+                        <MudText Typo="Typo.caption">Tell us a little about yourself</MudText>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <MudTextField Label="Username" HelperText="4–100 characters" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AccountCircle"
+                                  @bind-Value="model.UserName" For="@(() => model.UserName)" />
+                    <MudTextField Label="Email" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email"
+                                  @bind-Value="model.Email" For="@(() => model.Email)" />
+                    <MudTextField Label="First Name" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Badge"
+                                  @bind-Value="model.FirstName" For="@(() => model.FirstName)" />
+                    <MudTextField Label="Last Name" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Badge"
+                                  @bind-Value="model.LastName" For="@(() => model.LastName)" />
+                    <MudTextField Label="Phone Number" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Phone"
+                                  @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" InputType="InputType.Telephone" />
+                </div>
+
+                <div class="section-heading password-heading">
+                    <MudIcon Icon="@Icons.Material.Filled.Lock" />
+                    <div>
+                        <MudText Typo="Typo.h6">Secure your account</MudText>
+                        <MudText Typo="Typo.caption">Choose a password you’ll remember</MudText>
+                    </div>
+                </div>
+
+                <div class="form-grid password-grid">
+                    <MudTextField Label="Password" HelperText="At least 8 characters" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock"
+                                  @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
+                    <MudTextField Label="Confirm Password" HelperText="Repeat your password" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.LockReset"
+                                  @bind-Value="model.RetypePassword" For="@(() => model.RetypePassword)" InputType="InputType.Password" />
+                </div>
+            </MudCardContent>
+            <MudCardActions Class="register-actions">
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" Class="register-button">Create account</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </EditForm>
+
+    <MudText Typo="Typo.caption" Class="already-account">Already have an account? <a href="/login">Sign in</a></MudText>
+</div>
+
+@code {
+    RegisterAccountForm model = new RegisterAccountForm();
+    bool success;
+
+    public class RegisterAccountForm
+    {
+        [Required]
+        [MinLength(4), MaxLength(100)]
+        public string UserName { get; set; } = "TestUser";
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        [MinLength(8)]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        public string RetypePassword { get; set; } = string.Empty;
+
+        [Phone]
+        public string? PhoneNumber { get; set; }
+
+        [Required]
+        [MaxLength(50)]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(50)]
+        public string LastName { get; set; } = string.Empty;
+
+
+
+
+
+    }
+
+    private void OnValidSubmit(EditContext context)
+    {
+        success = true;
+        StateHasChanged();
+    }
+}

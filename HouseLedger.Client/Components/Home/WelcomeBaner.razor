@@ -1,0 +1,62 @@
+﻿@implements IDisposable
+
+<section class="welcome-banner">
+    <div class="welcome-content">
+        <div class="welcome-icon">
+            <MudIcon Icon="@Icons.Material.Filled.WavingHand" />
+        </div>
+        <div>
+            <MudText Typo="Typo.h4" Class="welcome-title">Welcome back, @mockUserName</MudText>
+            <MudText Typo="Typo.body2" Class="welcome-subtitle">Here is what is going on with your tools.</MudText>
+        </div>
+    </div>
+    <div class="welcome-clock">
+        <MudIcon Icon="@Icons.Material.Filled.Schedule" />
+        <div>
+            <MudText Typo="Typo.caption">LOCAL TIME</MudText>
+            <MudText Typo="Typo.h6">@currentTime.ToString("HH:mm")</MudText> 
+        </div>
+    </div>
+</section>
+
+@code {
+    private readonly string mockUserName = "Michael";
+    private DateTime currentTime = DateTime.Now;
+    private PeriodicTimer? timer;
+    private CancellationTokenSource? cancellationTokenSource;
+
+    protected override void OnInitialized()
+    {
+        timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
+        cancellationTokenSource = new CancellationTokenSource();
+        _ = UpdateClockAsync(cancellationTokenSource.Token);
+    }
+
+    private async Task UpdateClockAsync(CancellationToken cancellationToken) //Dosent work needs to be fixed
+    {
+        if (timer is null)
+        {
+            return;
+        }
+
+        try
+        {
+            while (await timer.WaitForNextTickAsync(cancellationToken))
+            {
+                currentTime = DateTime.Now;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    public void Dispose()
+    {
+        cancellationTokenSource?.Cancel();
+        cancellationTokenSource?.Dispose();
+        timer?.Dispose();
+    }
+
+}

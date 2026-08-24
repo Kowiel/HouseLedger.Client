@@ -1,0 +1,75 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using HouseLedger.Shared.Models
+
+<div class="tool-editor">
+    <div class="tool-editor-heading">
+        <MudText Typo="Typo.h5">Add a tool</MudText>
+        <MudText Typo="Typo.body2">Add equipment to your household inventory.</MudText>
+    </div>
+
+    <EditForm Model="@model" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+        <div class="tool-editor-form">
+            <MudTextField Label="Tool name" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Build"
+                          @bind-Value="model.Name" For="@(() => model.Name)" />
+            <MudTextField Label="Description" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Description"
+                          @bind-Value="model.Description" For="@(() => model.Description)" />
+            <div class="tool-editor-grid">
+                <MudTextField Label="Brand" @bind-Value="model.Brand" For="@(() => model.Brand)" />
+                <MudTextField Label="Model" @bind-Value="model.Model" For="@(() => model.Model)" />
+            </div>
+            <MudTextField Label="Serial number" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Tag"
+                          @bind-Value="model.SerialNumber" For="@(() => model.SerialNumber)" />
+            <MudTextField Label="Notes" Lines="3" Variant="Variant.Outlined" @bind-Value="model.Notes" For="@(() => model.Notes)" />
+        </div>
+        <div class="tool-editor-actions">
+            <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="Cancel">Cancel</MudButton>
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Add tool</MudButton>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<Tool> OnSaved { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private ToolForm model = new();
+
+    private Task Save(EditContext context) => OnSaved.InvokeAsync(new Tool
+    {
+        Id = Guid.NewGuid(),
+        Name = model.Name,
+        Description = model.Description,
+        Brand = model.Brand,
+        Model = model.Model,
+        SerialNumber = model.SerialNumber,
+        Notes = model.Notes
+    });
+
+    private Task Cancel() => OnCancel.InvokeAsync();
+
+    private sealed class ToolForm
+    {
+        [Required, MaxLength(100)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required, MaxLength(250)]
+        public string Description { get; set; } = string.Empty;
+
+        [MaxLength(100)]
+        public string? Brand { get; set; }
+
+        [MaxLength(100)]
+        public string? Model { get; set; }
+
+        [MaxLength(100)]
+        public string? SerialNumber { get; set; }
+
+        [MaxLength(500)]
+        public string? Notes { get; set; }
+    }
+
+}

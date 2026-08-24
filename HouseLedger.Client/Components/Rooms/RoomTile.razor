@@ -1,0 +1,39 @@
+﻿@using HouseLedger.Shared.Models
+
+<button type="button" class="room-tile @(Selected ? "selected" : string.Empty)" @onclick="SelectRoom">
+    <div class="room-tile-icon">
+        <MudIcon Icon="@GetRoomIcon(Room.Name)" />
+    </div>
+    <div class="room-tile-copy">
+        <MudText Typo="Typo.h6">@Room.Name</MudText>
+        <MudText Typo="Typo.body2">@(Room.Description ?? "No description added")</MudText>
+    </div>
+    <div class="room-tile-footer">
+        <span>
+            <MudIcon Icon="@Icons.Material.Filled.Build" />
+            @Room.Tools.Count tool@(Room.Tools.Count == 1 ? string.Empty : "s")
+        </span>
+        <MudIcon Icon="@Icons.Material.Filled.ArrowForward" />
+    </div>
+</button>
+
+@code {
+    [Parameter, EditorRequired]
+    public Room Room { get; set; } = null!;
+
+    [Parameter]
+    public bool Selected { get; set; }
+
+    [Parameter]
+    public EventCallback<Room> OnSelected { get; set; }
+
+    private Task SelectRoom() => OnSelected.InvokeAsync(Room);
+
+    private static string GetRoomIcon(string name) => name.ToLowerInvariant() switch
+    {
+        var value when value.Contains("kitchen") => Icons.Material.Filled.Kitchen,
+        var value when value.Contains("garage") || value.Contains("shed") => Icons.Material.Filled.Handyman,
+        var value when value.Contains("office") => Icons.Material.Filled.HomeWork,
+        _ => Icons.Material.Filled.MeetingRoom
+    };
+}

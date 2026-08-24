@@ -1,0 +1,145 @@
+﻿@page "/rooms"
+@using HouseLedger.Shared.Models
+
+<PageTitle>Rooms</PageTitle>
+
+<div class="rooms-page @(showPanel ? "panel-open" : "list-centered")">
+    <div class="rooms-heading">
+        <div class="rooms-page-icon"><MudIcon Icon="@Icons.Material.Filled.MeetingRoom" /></div>
+        <div>
+            <MudText Typo="Typo.h3" Class="rooms-title">Rooms</MudText>
+            <MudText Typo="Typo.body1" Class="rooms-subtitle">Organize your home and see what is stored in each space.</MudText>
+        </div>
+    </div>
+
+    <div class="rooms-workspace @(showPanel ? "panel-open" : string.Empty)">
+        <div class="room-tiles">
+            <div class="room-grid-toolbar">
+                <div>
+                    <MudText Typo="Typo.h6">Your rooms</MudText>
+                    <MudText Typo="Typo.caption">@rooms.Count room@(rooms.Count == 1 ? string.Empty : "s")</MudText>
+                </div>
+                <div class="room-toolbar-actions">
+                    <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick="RefreshRooms" AriaLabel="Refresh rooms" />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAdd">Add room</MudButton>
+                </div>
+            </div>
+
+            <div class="room-grid">
+                @foreach (var room in rooms)
+                {
+                    <RoomTile Room="room" Selected="@(selectedRoom?.Id == room.Id)" OnSelected="OpenRoom" />
+                }
+            </div>
+        </div>
+
+        @if (showPanel)
+        {
+            <div class="room-panel">
+                <div class="room-panel-toolbar">
+                    <MudText Typo="Typo.subtitle1">@(isAdding ? "New room" : isEditing ? "Edit room" : "Room details")</MudText>
+                    <div>
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Inherit" Size="Size.Small" OnClick="RefreshRooms" AriaLabel="Refresh rooms" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" Size="Size.Small" OnClick="ClosePanel" AriaLabel="Close room panel" />
+                    </div>
+                </div>
+
+                @if (isAdding)
+                {
+                    <AddRoom OnSaved="CreateRoom" OnCancel="ClosePanel" />
+                }
+                else if (isEditing && selectedRoom is not null)
+                {
+                    <EditRoom Room="selectedRoom" OnSaved="UpdateRoom" OnCancel="ClosePanel" />
+                }
+                else if (selectedRoom is not null)
+                {
+                    <RoomDetails Room="selectedRoom" OnEdit="OpenEdit" OnClose="ClosePanel" />
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Room> rooms = CreateRooms();
+    private Room? selectedRoom;
+    private bool showPanel;
+    private bool isAdding;
+    private bool isEditing;
+
+    private void OpenRoom(Room room)
+    {
+        selectedRoom = room;
+        showPanel = true;
+        isAdding = false;
+        isEditing = false;
+    }
+
+    private void OpenAdd()
+    {
+        selectedRoom = null;
+        showPanel = true;
+        isAdding = true;
+        isEditing = false;
+    }
+
+    private void OpenEdit()
+    {
+        if (selectedRoom is not null)
+        {
+            showPanel = true;
+            isAdding = false;
+            isEditing = true;
+        }
+    }
+
+    private void ClosePanel()
+    {
+        showPanel = false;
+        isAdding = false;
+        isEditing = false;
+    }
+
+    private void RefreshRooms()
+    {
+        rooms = CreateRooms();
+        selectedRoom = null;
+        ClosePanel();
+    }
+
+    private void CreateRoom(Room room)
+    {
+        rooms.Insert(0, room);
+        selectedRoom = room;
+        isAdding = false;
+        showPanel = true;
+    }
+
+    private void UpdateRoom(Room updatedRoom)
+    {
+        var index = rooms.FindIndex(room => room.Id == updatedRoom.Id);
+        if (index >= 0)
+        {
+            rooms[index] = updatedRoom;
+            selectedRoom = updatedRoom;
+        }
+
+        isEditing = false;
+        showPanel = true;
+    }
+
+    private static List<Room> CreateRooms() =>
+    [
+        new() { Id = Guid.NewGuid(), Name = "Garage", Description = "Tools, equipment, and storage", Tools =
+            [new() { Id = Guid.NewGuid(), Name = "Cordless drill", Description = "18V compact drill", Brand = "Makita" }, new() { Id = Guid.NewGuid(), Name = "Step ladder", Description = "6 ft. folding ladder", Brand = "Werner" }] },
+        new() { Id = Guid.NewGuid(), Name = "Kitchen", Description = "Cooking and dining essentials", Tools =
+            [new() { Id = Guid.NewGuid(), Name = "Stand mixer", Description = "5-quart mixer", Brand = "KitchenAid" }] },
+        new() { Id = Guid.NewGuid(), Name = "Living room", Description = "Shared living space", Tools =
+            [new() { Id = Guid.NewGuid(), Name = "Projector", Description = "HD home projector", Brand = "Epson" }] },
+        new() { Id = Guid.NewGuid(), Name = "Garden shed", Description = "Outdoor and garden equipment", Tools =
+            [new() { Id = Guid.NewGuid(), Name = "Pressure washer", Description = "Electric pressure washer", Brand = "Karcher" }, new() { Id = Guid.NewGuid(), Name = "Garden trimmer", Description = "Battery-powered trimmer", Brand = "Ryobi" }] },
+        new() { Id = Guid.NewGuid(), Name = "Home office", Description = "Work and study area" },
+        new() { Id = Guid.NewGuid(), Name = "Utility room", Description = "Cleaning and household supplies" }
+    ];
+}

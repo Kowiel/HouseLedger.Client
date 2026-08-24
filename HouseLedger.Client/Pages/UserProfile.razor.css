@@ -1,0 +1,236 @@
+.profile-page {
+    min-height: calc(100vh - 64px);
+    padding: 3rem 1.25rem 4rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-page::before,
+.profile-page::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.profile-page::before {
+    width: 28rem;
+    height: 28rem;
+    top: -10rem;
+    right: -10rem;
+    background: rgba(93, 135, 255, 0.16);
+}
+
+.profile-page::after {
+    width: 22rem;
+    height: 22rem;
+    bottom: -8rem;
+    left: -9rem;
+    background: rgba(255, 174, 82, 0.13);
+}
+
+.profile-heading,
+.profile-grid {
+    position: relative;
+    z-index: 1;
+}
+
+.profile-heading {
+    max-width: 940px;
+    margin: 0 auto 2rem;
+    color: white;
+}
+
+.profile-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    display: grid;
+    place-items: center;
+    margin-bottom: 1rem;
+    border-radius: 1.1rem;
+    background: linear-gradient(135deg, #6c8cff, #a16eff);
+    box-shadow: 0 0.75rem 2rem rgba(64, 82, 190, 0.35);
+}
+
+.profile-title {
+    font-weight: 700;
+    letter-spacing: -0.04em;
+}
+
+.profile-subtitle {
+    color: rgba(255, 255, 255, 0.72);
+    margin-top: 0.4rem;
+}
+
+.profile-grid {
+    max-width: 940px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin: 0 auto;
+}
+
+::deep .profile-card {
+    border-radius: 1.15rem;
+    background: rgba(255, 255, 255, 0.97);
+    overflow: hidden;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+::deep .profile-card:hover {
+    transform: translateY(-2px);
+}
+
+::deep .user-info-card {
+    grid-column: 1 / -1;
+}
+
+::deep .profile-card-content {
+    padding: 1.75rem 2rem 1.5rem;
+}
+
+::deep .card-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+::deep .card-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 2.75rem;
+    border-radius: 0.85rem;
+}
+
+::deep .info-icon { color: #3979d8; background: #e9f1ff; }
+::deep .password-icon { color: #9c60d1; background: #f5eaff; }
+::deep .contacts-icon { color: #d18132; background: #fff2df; }
+
+::deep .card-heading .mud-typography-caption {
+    color: #737887;
+}
+
+::deep .profile-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.25rem;
+}
+
+::deep .full-width-field {
+    grid-column: 1 / -1;
+}
+
+::deep .profile-field {
+    margin-top: 1.25rem;
+}
+
+::deep .mud-input-adornment {
+    color: #6574c4;
+}
+
+::deep .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.75rem;
+}
+
+::deep .profile-button {
+    border-radius: 0.7rem;
+    padding: 0.6rem 1.1rem;
+    font-weight: 600;
+}
+
+::deep .saved-message {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: #2e8b57;
+}
+
+::deep .contact-row {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1rem 0;
+    border-top: 1px solid #eceef4;
+}
+
+::deep .contact-type {
+    width: 2.25rem;
+    height: 2.25rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 2.25rem;
+    border-radius: 0.7rem;
+    color: #5364c2;
+    background: #e9ebff;
+}
+
+::deep .contact-copy {
+    flex: 1;
+    min-width: 0;
+}
+
+::deep .contact-copy .mud-typography-subtitle1 {
+    font-weight: 600;
+}
+
+::deep .contact-copy .mud-typography-body2 {
+    color: #737887;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+::deep .verification-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+    color: #737887;
+    line-height: 1.45;
+    margin-top: 1rem;
+}
+
+::deep .verification-note .mud-icon-root {
+    font-size: 1rem;
+    margin-top: 0.1rem;
+}
+
+@media (max-width: 700px) {
+    .profile-page {
+        padding: 2.25rem 1rem 3rem;
+    }
+
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    ::deep .user-info-card {
+        grid-column: auto;
+    }
+
+    ::deep .profile-card-content {
+        padding: 1.35rem 1.25rem;
+    }
+
+    ::deep .profile-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    ::deep .full-width-field {
+        grid-column: auto;
+    }
+
+    ::deep .card-footer {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    ::deep .profile-button {
+        width: 100%;
+    }
+}

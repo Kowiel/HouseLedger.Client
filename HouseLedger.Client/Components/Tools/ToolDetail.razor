@@ -1,0 +1,53 @@
+﻿@using HouseLedger.Shared.Models
+
+<div class="tool-detail">
+    <div class="tool-detail-hero">
+        <div class="tool-detail-icon"><MudIcon Icon="@Icons.Material.Filled.Build" /></div>
+        <MudText Typo="Typo.h5" Class="tool-detail-name">@Tool.Name</MudText>
+        <MudText Typo="Typo.body2" Class="tool-detail-caption">@Tool.Description</MudText>
+    </div>
+
+    <div class="tool-detail-fields">
+        <div class="tool-detail-field">
+            <MudIcon Icon="@Icons.Material.Filled.Business" />
+            <div><MudText Typo="Typo.caption">Brand and model</MudText><MudText Typo="Typo.body1">@(Tool.Brand ?? "Not provided") @(string.IsNullOrWhiteSpace(Tool.Model) ? string.Empty : $"• {Tool.Model}")</MudText></div>
+        </div>
+        <div class="tool-detail-field">
+            <MudIcon Icon="@Icons.Material.Filled.Tag" />
+            <div><MudText Typo="Typo.caption">Serial number</MudText><MudText Typo="Typo.body1">@(Tool.SerialNumber ?? "Not provided")</MudText></div>
+        </div>
+        <div class="tool-detail-field">
+            <MudIcon Icon="@Icons.Material.Filled.Person" />
+            <div><MudText Typo="Typo.caption">Current status</MudText><MudText Typo="Typo.body1">@(Tool.LentToContact is null ? "Available" : $"Lent to {Tool.LentToContact.DisplayName}")</MudText></div>
+        </div>
+        <div class="tool-detail-field">
+            <MudIcon Icon="@Icons.Material.Filled.MeetingRoom" />
+            <div><MudText Typo="Typo.caption">Room</MudText><MudText Typo="Typo.body1">@(Tool.Room?.Name ?? "Not assigned")</MudText></div>
+        </div>
+        <div class="tool-detail-field">
+            <MudIcon Icon="@Icons.Material.Filled.Notes" />
+            <div><MudText Typo="Typo.caption">Notes</MudText><MudText Typo="Typo.body1">@(string.IsNullOrWhiteSpace(Tool.Notes) ? "No notes added" : Tool.Notes)</MudText></div>
+        </div>
+    </div>
+
+    <div class="tool-detail-actions">
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.Close" OnClick="Close">Close</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" OnClick="Edit">Edit tool</MudButton>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Tool Tool { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private Task Edit() => OnEdit.InvokeAsync();
+
+    private Task Close() => OnClose.InvokeAsync();
+
+}

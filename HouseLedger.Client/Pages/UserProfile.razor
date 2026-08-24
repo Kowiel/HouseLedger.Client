@@ -1,0 +1,17 @@
+﻿@page "/userprofile"
+
+<PageTitle>User profile</PageTitle>
+
+<div class="profile-page">
+    <div class="profile-heading">
+        <div class="profile-icon"><MudIcon Icon="@Icons.Material.Filled.AccountCircle" /></div>
+        <MudText Typo="Typo.h3" Class="profile-title">Your profile</MudText>
+        <MudText Typo="Typo.body1" Class="profile-subtitle">Manage your personal details, security, and contact preferences.</MudText>
+    </div>
+
+    <div class="profile-grid">
+        <UserInfo />
+        <VerifyUserContacts />
+        <ResetPassword />
+    </div>
+</div>
