@@ -1,0 +1,41 @@
+﻿<section class="dashboard-card urgent-tools-card">
+    <div class="dashboard-card-heading">
+        <div class="dashboard-card-icon urgent-icon"><MudIcon Icon="@Icons.Material.Filled.WarningAmber" /></div>
+        <div>
+            <MudText Typo="Typo.h6">Needs your attention</MudText>
+            <MudText Typo="Typo.caption">Lent tools that are overdue or due soon.</MudText>
+        </div>
+        <MudChip T="string" Color="Color.Warning" Size="Size.Small">@tools.Count</MudChip>
+    </div>
+
+    <div class="urgent-tool-list">
+        @foreach (var tool in tools.OrderBy(tool => tool.ReturnDate))
+        {
+            var expired = tool.ReturnDate < DateTime.Today;
+            <div class="urgent-tool-row @(expired ? "expired" : "due-soon")">
+                <div class="urgent-tool-icon"><MudIcon Icon="@Icons.Material.Filled.Build" /></div>
+                <div class="urgent-tool-copy">
+                    <MudText Typo="Typo.subtitle2">@tool.Name</MudText>
+                    <MudText Typo="Typo.caption">With @tool.Lender</MudText>
+                </div>
+                <div class="urgent-tool-date">
+                    <MudText Typo="Typo.caption">Return date</MudText>
+                    <MudText Typo="Typo.body2">@tool.ReturnDate.ToString("MMM d")</MudText>
+                </div>
+                <MudChip T="string" Color="@(expired ? Color.Error : Color.Warning)" Size="Size.Small">@(expired ? "Expired" : "Due soon")</MudChip>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private readonly List<UrgentTool> tools =
+    [
+        new("Circular saw", "Morgan Lee", DateTime.Today.AddDays(-3)),
+        new("Step ladder", "Alex Johnson", DateTime.Today.AddDays(2)),
+        new("Orbital sander", "Taylor Smith", DateTime.Today.AddDays(6)),
+        new("Pressure washer", "Casey Brown", DateTime.Today.AddDays(-1))
+    ];
+
+    private sealed record UrgentTool(string Name, string Lender, DateTime ReturnDate);
+}

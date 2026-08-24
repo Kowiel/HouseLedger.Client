@@ -1,0 +1,34 @@
+﻿<section class="dashboard-card statistics-card">
+    <div class="dashboard-card-heading">
+        <div class="dashboard-card-icon statistics-icon"><MudIcon Icon="@Icons.Material.Filled.Insights" /></div>
+        <div>
+            <MudText Typo="Typo.h6">Statistics</MudText>
+            <MudText Typo="Typo.caption">A quick view of your tool activity.</MudText>
+        </div>
+    </div>
+
+    <div class="statistic-toggle">
+        <MudText Typo="Typo.caption">Highlight lent tools</MudText>
+        <MudSwitch @bind-Value="showLentTools" Color="Color.Primary" />
+    </div>
+
+    <div class="statistic-primary @(showLentTools ? "lent-highlight" : "total-highlight")">
+        <MudIcon Icon="@(showLentTools ? Icons.Material.Filled.Output : Icons.Material.Filled.Inventory2)" />
+        <div>
+            <MudText Typo="Typo.caption">@(showLentTools ? "Currently lent out" : "Total tools")</MudText>
+            <MudText Typo="Typo.h3">@(showLentTools ? lentTools : totalTools)</MudText>
+        </div>
+        <MudText Typo="Typo.caption" Class="statistic-period">@(showLentTools ? "in use" : "in inventory")</MudText>
+    </div>
+
+    <div class="statistic-secondary">
+        <span>Total tools</span><strong>@totalTools</strong>
+        <span>Lent out</span><strong>@lentTools</strong>
+    </div>
+</section>
+
+@code {
+    private bool showLentTools;
+    private const int totalTools = 24;
+    private const int lentTools = 7;
+}

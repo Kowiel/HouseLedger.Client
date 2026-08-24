@@ -1,0 +1,53 @@
+﻿<section class="dashboard-card late-lenders-card">
+    <div class="dashboard-card-heading">
+        <div class="dashboard-card-icon lenders-icon"><MudIcon Icon="@Icons.Material.Filled.PeopleOutline" /></div>
+        <div>
+            <MudText Typo="Typo.h6">Late lenders</MudText>
+            <MudText Typo="Typo.caption">People with the most overdue tools.</MudText>
+        </div>
+    </div>
+
+    <div class="late-lender-list">
+        @foreach (var lender in lenders)
+        {
+            <div class="late-lender-row">
+                <span class="lender-rank">@lender.Rank</span>
+                <span class="lender-avatar">@GetInitials(lender.Name)</span>
+                <div class="lender-copy">
+                    <MudText Typo="Typo.subtitle2">@lender.Name</MudText>
+                    <MudText Typo="Typo.caption">@lender.OverdueTools overdue tool@(lender.OverdueTools == 1 ? string.Empty : "s")</MudText>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Class="lender-chevron" />
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private readonly List<LateLender> lenders = new()
+    {
+        new(1, "Morgan Lee", 4),
+        new(2, "Alex Johnson", 3),
+        new(3, "Taylor Smith", 2)
+    };
+
+    private static string GetInitials(string name)
+    {
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length == 0)
+        {
+            return "?";
+        }
+
+        if (parts.Length == 1)
+        {
+            return parts[0][..1].ToUpperInvariant();
+        }
+
+        return string.Concat(parts[0][..1], parts[^1][..1]).ToUpperInvariant();
+    }
+
+    private sealed record LateLender(int Rank, string Name, int OverdueTools);
+
+}
