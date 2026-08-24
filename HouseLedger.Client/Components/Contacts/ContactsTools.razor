@@ -1,0 +1,65 @@
+﻿@using HouseLedger.Shared.Models
+
+<div class="contact-tools">
+    <div class="tools-heading">
+        <div class="tools-icon"><MudIcon Icon="@Icons.Material.Filled.Handyman" /></div>
+        <div>
+            <MudText Typo="Typo.h5">Tools owned</MudText>
+            <MudText Typo="Typo.body2">Tools currently lent to @Contact.DisplayName.</MudText>
+        </div>
+    </div>
+
+    <div class="tools-list">
+        @foreach (var tool in tools)
+        {
+            <div class="tool-row @GetStatusClass(tool.ReturnDate)">
+                <div class="tool-icon"><MudIcon Icon="@Icons.Material.Filled.Build" /></div>
+                <div class="tool-copy">
+                    <MudText Typo="Typo.subtitle1">@tool.Name</MudText>
+                    <MudText Typo="Typo.body2">@tool.Description</MudText>
+                    <MudText Typo="Typo.caption">Expected return: @tool.ReturnDate.ToString("MMM d, yyyy")</MudText>
+                </div>
+                <div class="tool-status">
+                    @if (tool.ReturnDate < DateTime.Today)
+                    {
+                        <MudChip T="string" Color="Color.Error" Size="Size.Small">Expired</MudChip>
+                    }
+                    else if (tool.ReturnDate <= DateTime.Today.AddDays(7))
+                    {
+                        <MudChip T="string" Color="Color.Warning" Size="Size.Small">Almost due</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small">On track</MudChip>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="tools-footer">
+        <MudButton Variant="Variant.Text" Color="Color.Default" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="Back">Back to contact</MudButton>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Contact Contact { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback OnBack { get; set; }
+
+    private readonly List<ContactTool> tools =
+    [
+        new("Cordless drill", "18V compact drill", DateTime.Today.AddDays(3)),
+        new("Ladder", "6 ft. step ladder", DateTime.Today.AddDays(-2)),
+        new("Pressure washer", "Electric pressure washer", DateTime.Today.AddDays(14))
+    ];
+
+    private Task Back() => OnBack.InvokeAsync();
+
+    private static string GetStatusClass(DateTime returnDate) =>
+        returnDate < DateTime.Today ? "tool-expired" : returnDate <= DateTime.Today.AddDays(7) ? "tool-almost-due" : "tool-on-track";
+
+    private sealed record ContactTool(string Name, string Description, DateTime ReturnDate);
+}

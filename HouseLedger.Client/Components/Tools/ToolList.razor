@@ -1,0 +1,78 @@
+﻿@using HouseLedger.Shared.Models
+
+<section class="tool-list-card">
+    <div class="tool-list-header">
+        <div>
+            <MudText Typo="Typo.h6">Your tools</MudText>
+            <MudText Typo="Typo.caption">@Tools.Count tool@(Tools.Count == 1 ? string.Empty : "s")</MudText>
+        </div>
+        <div class="tool-list-actions">
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" OnClick="Refresh" AriaLabel="Refresh tools" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="Add">Add tool</MudButton>
+        </div>
+    </div>
+
+    <MudTextField @bind-Value="searchTerm" Placeholder="Search tools" Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" Margin="Margin.Dense" Class="tool-search" />
+
+    <div class="tool-list-items">
+        @if (!FilteredTools.Any())
+        {
+            <div class="tool-list-empty">
+                <MudIcon Icon="@Icons.Material.Filled.SearchOff" />
+                <MudText Typo="Typo.body2">No tools match your search.</MudText>
+            </div>
+        }
+        else
+        {
+            @foreach (var tool in FilteredTools)
+            {
+                <button type="button" class="tool-list-row @(SelectedTool?.Id == tool.Id ? "selected" : string.Empty)" @onclick="() => Select(tool)">
+                    <span class="tool-list-icon"><MudIcon Icon="@Icons.Material.Filled.Build" /></span>
+                    <span class="tool-list-copy">
+                        <span class="tool-list-name">@tool.Name</span>
+                        <span class="tool-list-description">@tool.Description</span>
+                    </span>
+                    @if (tool.LentToContact is not null)
+                    {
+                        <span class="lent-indicator">Lent</span>
+                    }
+                    <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Class="tool-list-chevron" />
+                </button>
+            }
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<Tool> Tools { get; set; } = [];
+
+    [Parameter]
+    public Tool? SelectedTool { get; set; }
+
+    [Parameter]
+    public EventCallback<Tool> OnToolSelected { get; set; }
+
+    [Parameter]
+    public EventCallback OnAddTool { get; set; }
+
+    [Parameter]
+    public EventCallback OnRefresh { get; set; }
+
+    private string searchTerm = string.Empty;
+
+    private IEnumerable<Tool> FilteredTools => Tools.Where(tool =>
+        string.IsNullOrWhiteSpace(searchTerm)
+        || tool.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+        || (tool.Description?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
+        || (tool.Brand?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
+        || (tool.Model?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
+
+    private Task Select(Tool tool) => OnToolSelected.InvokeAsync(tool);
+
+    private Task Add() => OnAddTool.InvokeAsync();
+
+    private Task Refresh() => OnRefresh.InvokeAsync();
+
+}

@@ -1,13 +1,165 @@
 ﻿@page "/contacts"
-@inject HttpClient Http
+@using HouseLedger.Shared.Models
 
 <PageTitle>Contacts</PageTitle>
 
-<h1>Contacts</h1>
+<div class="contacts-page @(showEditor ? "editor-open" : "list-centered")">
+    <div class="contacts-heading">
+        <div class="contacts-icon"><MudIcon Icon="@Icons.Material.Filled.Contacts" /></div>
+        <div>
+            <MudText Typo="Typo.h3" Class="contacts-title">Contacts</MudText>
+            <MudText Typo="Typo.body1" Class="contacts-subtitle">Keep the people in your household ledger close at hand.</MudText>
+        </div>
+    </div>
 
-<p>Here you can find contact information.</p>
+    <div class="contacts-workspace @(showEditor ? "editor-open" : string.Empty)">
+        <ContactList Contacts="contacts"
+                     SelectedContact="selectedContact"
+                     OnContactSelected="OpenContact"
+                     OnAddContact="OpenCreate"
+                     OnRefresh="RefreshContacts" />
 
+        @if (showEditor)
+        {
+            <div class="contact-panel">
+                <div class="panel-toolbar">
+                    <MudText Typo="Typo.subtitle1">@(isCreating ? "New contact" : isEditing ? "Edit contact" : showTools ? "Tools owned" : "Contact workspace")</MudText>
+                    <div class="panel-actions">
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Inherit" Size="Size.Small" OnClick="RefreshContacts" AriaLabel="Refresh contacts" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" Size="Size.Small" OnClick="ClosePanel" AriaLabel="Close contact panel" />
+                    </div>
+                </div>
+
+                @if (isCreating)
+                {
+                    <CreateContact OnSaved="CreateContact" OnCancel="ClosePanel" />
+                }
+                else if (showTools && selectedContact is not null)
+                {
+                    <ContactsTools Contact="selectedContact" OnBack="ShowDetails" />
+                }
+                else if (isEditing && selectedContact is not null)
+                {
+                    <EditContact Contact="selectedContact" OnSaved="UpdateContact" OnCancel="ClosePanel" />
+                }
+                else if (selectedContact is not null)
+                {
+                    <ContactDetails Contact="selectedContact"
+                                    OnEdit="OpenEdit"
+                                    OnClose="ClosePanel"
+                                    OnTools="ShowTools" />
+                }
+            </div>
+        }
+    </div>
+</div>
 
 @code {
+    private List<Contact> contacts = CreateContacts();
+    private Contact? selectedContact;
+    private bool showEditor;
+    private bool isCreating;
+    private bool isEditing;
+    private bool showTools;
 
+    private void OpenContact(Contact contact)
+    {
+        selectedContact = contact;
+        isCreating = false;
+        isEditing = false;
+        showTools = false;
+        showEditor = true;
+    }
+
+    private void OpenCreate()
+    {
+        selectedContact = null;
+        isCreating = true;
+        isEditing = false;
+        showTools = false;
+        showEditor = true;
+    }
+
+    private void OpenEdit()
+    {
+        if (selectedContact is not null)
+        {
+            isCreating = false;
+            isEditing = true;
+            showTools = false;
+            showEditor = true;
+        }
+    }
+
+    private void ClosePanel()
+    {
+        showEditor = false;
+        isCreating = false;
+        isEditing = false;
+        showTools = false;
+    }
+
+    private void RefreshContacts()
+    {
+        contacts = CreateContacts();
+        selectedContact = null;
+        showEditor = false;
+        isCreating = false;
+        isEditing = false;
+        showTools = false;
+    }
+
+    private void CreateContact(Contact contact)
+    {
+        contacts.Insert(0, contact);
+        selectedContact = contact;
+        isCreating = false;
+        isEditing = false;
+        showTools = false;
+        showEditor = true;
+    }
+
+    private void UpdateContact(Contact updatedContact)
+    {
+        var index = contacts.FindIndex(contact => contact.Id == updatedContact.Id);
+        if (index >= 0)
+        {
+            contacts[index] = updatedContact;
+            selectedContact = updatedContact;
+        }
+
+        isEditing = false;
+        showEditor = true;
+    }
+
+    private void ShowTools()
+    {
+        if (selectedContact is not null)
+        {
+            isCreating = false;
+            isEditing = false;
+            showTools = true;
+            showEditor = true;
+        }
+    }
+
+    private void ShowDetails()
+    {
+        showTools = false;
+        isEditing = false;
+        showEditor = true;
+    }
+
+    private static List<Contact> CreateContacts() =>
+    [
+        new() { Id = Guid.NewGuid(), DisplayName = "Alex Johnson", Email = "alex.johnson@example.com", PhoneNumber = "+1 (555) 014-2281", Notes = "Household contact" },
+        new() { Id = Guid.NewGuid(), DisplayName = "Morgan Lee", Email = "morgan.lee@example.com", PhoneNumber = "+1 (555) 018-9432", Notes = "Emergency contact" },
+        new() { Id = Guid.NewGuid(), DisplayName = "Taylor Smith", Email = "taylor.smith@example.com", PhoneNumber = "+1 (555) 012-7810", Notes = "Neighbor" },
+        new() { Id = Guid.NewGuid(), DisplayName = "Jordan Williams", Email = "jordan.williams@example.com", PhoneNumber = "+1 (555) 016-4390", Notes = "Family contact" },
+        new() { Id = Guid.NewGuid(), DisplayName = "Casey Brown", Email = "casey.brown@example.com", PhoneNumber = "+1 (555) 019-6274", Notes = "Household contact" },
+        new() { Id = Guid.NewGuid(), DisplayName = "Riley Davis", Email = "riley.davis@example.com", PhoneNumber = "+1 (555) 013-8051", Notes = "Friend" },
+        new() { Id = Guid.NewGuid(), DisplayName = "Jamie Wilson", Email = "jamie.wilson@example.com", PhoneNumber = "+1 (555) 017-2916", Notes = "Emergency contact" },
+        new() { Id = Guid.NewGuid(), DisplayName = "Avery Martinez", Email = "avery.martinez@example.com", PhoneNumber = "+1 (555) 011-5648", Notes = "Neighbor" },
+        new() { Id = Guid.NewGuid(), DisplayName = "Drew Thompson", Email = "drew.thompson@example.com", PhoneNumber = "+1 (555) 015-3729", Notes = "Family contact" }
+    ];
 }

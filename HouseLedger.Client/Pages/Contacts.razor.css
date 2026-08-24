@@ -1,0 +1,474 @@
+.contacts-page {
+    min-height: calc(100vh - 64px);
+    padding: 2.5rem 1.25rem 4rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.contacts-page::before,
+.contacts-page::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.contacts-page::before {
+    width: 30rem;
+    height: 30rem;
+    top: -12rem;
+    right: -9rem;
+    background: rgba(93, 135, 255, 0.16);
+}
+
+.contacts-page::after {
+    width: 24rem;
+    height: 24rem;
+    bottom: -10rem;
+    left: -10rem;
+    background: rgba(255, 174, 82, 0.13);
+}
+
+.contacts-heading,
+.contacts-workspace {
+    position: relative;
+    z-index: 1;
+}
+
+.contacts-heading {
+    max-width: 1240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 0 auto 2rem;
+    color: white;
+    text-align: center;
+}
+
+.contacts-page.list-centered .contacts-heading {
+    justify-content: center;
+    text-align: center;
+}
+
+.contacts-page.list-centered .contacts-icon {
+    margin-left: 0.25rem;
+}
+
+.contacts-icon {
+    width: 3.75rem;
+    height: 3.75rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 3.75rem;
+    border-radius: 1.2rem;
+    background: linear-gradient(135deg, #6c8cff, #a16eff);
+    box-shadow: 0 0.75rem 2rem rgba(64, 82, 190, 0.35);
+}
+
+.contacts-title {
+    font-weight: 700;
+    letter-spacing: -0.04em;
+}
+
+.contacts-subtitle {
+    color: rgba(255, 255, 255, 0.72);
+    margin-top: 0.35rem;
+}
+
+.contacts-workspace {
+    max-width: 1240px;
+    display: grid;
+    grid-template-columns: minmax(0, 900px);
+    gap: 1.25rem;
+    margin: 0 auto;
+    transition: grid-template-columns 220ms ease;
+}
+
+.contacts-workspace:not(.editor-open) {
+    justify-content: center;
+}
+
+.contacts-workspace.editor-open {
+    grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1.1fr);
+}
+
+::deep .contact-list-card,
+.contact-panel {
+    min-width: 0;
+    border-radius: 1.15rem;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 0.8rem 2rem rgba(28, 38, 76, 0.18);
+}
+
+::deep .contact-list-card {
+    padding: 1.5rem;
+}
+
+::deep .list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+::deep .list-header .mud-typography-caption {
+    color: #737887;
+}
+
+::deep .list-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+::deep .contact-search {
+    margin-bottom: 0.75rem;
+}
+
+::deep .contact-list-items {
+    max-height: 31rem;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+::deep .contact-list-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.85rem 0.7rem;
+    border: 0;
+    border-top: 1px solid #eceef4;
+    color: #252a3a;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 150ms ease, transform 150ms ease;
+}
+
+::deep .contact-list-row:hover,
+::deep .contact-list-row.selected {
+    background: #f0f2ff;
+}
+
+::deep .contact-list-row:hover {
+    transform: translateX(3px);
+}
+
+::deep .contact-avatar,
+::deep .details-avatar {
+    display: grid;
+    place-items: center;
+    flex: 0 0 2.65rem;
+    width: 2.65rem;
+    height: 2.65rem;
+    border-radius: 50%;
+    color: white;
+    background: linear-gradient(135deg, #667eea, #8e6de0);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+::deep .contact-row-copy {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+::deep .contact-name {
+    font-weight: 600;
+}
+
+::deep .contact-email {
+    overflow: hidden;
+    color: #737887;
+    font-size: 0.8rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+::deep .contact-chevron {
+    color: #9aa0b2;
+}
+
+::deep .contact-list-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 3rem 1rem;
+    color: #737887;
+    text-align: center;
+}
+
+.contact-panel {
+    overflow: hidden;
+}
+
+::deep .panel-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem 0.75rem 1.5rem;
+    color: white;
+    background: linear-gradient(135deg, #566bd3, #8060c5);
+}
+
+::deep .panel-actions {
+    display: flex;
+    gap: 0.15rem;
+}
+
+::deep .contact-details,
+::deep .contact-editor {
+    padding: 1.75rem 2rem 2rem;
+}
+
+::deep .details-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    text-align: center;
+}
+
+::deep .details-avatar {
+    width: 5rem;
+    height: 5rem;
+    flex-basis: 5rem;
+    margin-bottom: 0.85rem;
+    font-size: 1.25rem;
+    box-shadow: 0 0.5rem 1.2rem rgba(82, 93, 190, 0.3);
+}
+
+::deep .details-name {
+    font-weight: 700;
+}
+
+::deep .details-caption,
+::deep .editor-heading .mud-typography-body2 {
+    color: #737887;
+}
+
+::deep .details-fields {
+    border-top: 1px solid #eceef4;
+}
+
+::deep .details-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #eceef4;
+}
+
+::deep .details-field > .mud-icon-root {
+    color: #6574c4;
+}
+
+::deep .details-field .mud-typography-caption {
+    display: block;
+    color: #737887;
+    margin-bottom: 0.15rem;
+}
+
+::deep .details-actions,
+::deep .editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+::deep .details-primary-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+::deep .editor-heading {
+    margin-bottom: 1.5rem;
+}
+
+::deep .editor-heading .mud-typography-h5 {
+    font-weight: 700;
+}
+
+::deep .editor-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+}
+
+::deep .notes-input {
+    margin-top: 0.15rem;
+}
+
+::deep .tools-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+::deep .tools-heading .mud-typography-body2 {
+    color: #737887;
+}
+
+::deep .tools-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 2.75rem;
+    border-radius: 0.85rem;
+    color: #d18132;
+    background: #fff2df;
+}
+
+::deep .tools-list {
+    border-top: 1px solid #eceef4;
+}
+
+::deep .tool-row {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #eceef4;
+    border-left: 0.25rem solid transparent;
+}
+
+::deep .tool-icon {
+    width: 2.35rem;
+    height: 2.35rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 2.35rem;
+    border-radius: 0.7rem;
+    color: #6574c4;
+    background: #eef0ff;
+}
+
+::deep .tool-copy {
+    flex: 1;
+    min-width: 0;
+}
+
+::deep .tool-copy .mud-typography-subtitle1 {
+    font-weight: 600;
+}
+
+::deep .tool-copy .mud-typography-body2,
+::deep .tool-copy .mud-typography-caption {
+    color: #737887;
+}
+
+::deep .tool-copy .mud-typography-caption {
+    display: block;
+    margin-top: 0.2rem;
+}
+
+::deep .tool-status {
+    flex: 0 0 auto;
+}
+
+::deep .tool-almost-due {
+    border-left-color: #e3a529;
+}
+
+::deep .tool-expired {
+    border-left-color: #d84c4c;
+}
+
+::deep .tools-footer {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 1.5rem;
+}
+
+::deep .profile-button,
+::deep .details-actions .mud-button,
+::deep .editor-actions .mud-button {
+    border-radius: 0.7rem;
+    font-weight: 600;
+}
+
+@media (max-width: 800px) {
+    .contacts-workspace,
+    .contacts-workspace.editor-open {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-panel {
+        order: -1;
+    }
+}
+
+@media (max-width: 520px) {
+    .contacts-page {
+        padding: 2rem 0.75rem 3rem;
+    }
+
+    .contacts-heading {
+        align-items: flex-start;
+    }
+
+    .contacts-icon {
+        width: 3rem;
+        height: 3rem;
+        flex-basis: 3rem;
+    }
+
+    .contacts-subtitle {
+        font-size: 0.9rem;
+    }
+
+    ::deep .contact-list-card,
+    ::deep .contact-details,
+    ::deep .contact-editor {
+        padding-left: 1.15rem;
+        padding-right: 1.15rem;
+    }
+
+    ::deep .list-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    ::deep .list-header-actions,
+    ::deep .list-header-actions .mud-button {
+        width: 100%;
+    }
+
+    ::deep .list-header-actions {
+        justify-content: space-between;
+    }
+
+    ::deep .details-actions,
+    ::deep .editor-actions {
+        flex-direction: column-reverse;
+    }
+
+    ::deep .details-primary-actions {
+        flex-direction: column-reverse;
+    }
+
+    ::deep .details-actions .mud-button,
+    ::deep .editor-actions .mud-button,
+    ::deep .details-primary-actions .mud-button {
+        width: 100%;
+    }
+
+    ::deep .tool-row {
+        align-items: flex-start;
+    }
+
+    ::deep .tool-status {
+        align-self: center;
+    }
+}

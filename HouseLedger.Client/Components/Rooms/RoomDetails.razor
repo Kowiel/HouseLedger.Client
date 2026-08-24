@@ -1,0 +1,63 @@
+﻿@using HouseLedger.Shared.Models
+
+<div class="room-details">
+    <div class="room-details-hero">
+        <div class="room-details-icon"><MudIcon Icon="@Icons.Material.Filled.MeetingRoom" /></div>
+        <MudText Typo="Typo.h5" Class="room-details-name">@Room.Name</MudText>
+        <MudText Typo="Typo.body2" Class="room-details-caption">@(Room.Description ?? "No description added")</MudText>
+    </div>
+
+    <div class="room-detail-summary">
+        <div><MudIcon Icon="@Icons.Material.Filled.Build" /><strong>@Room.Tools.Count</strong><span>Tools</span></div>
+        <div><MudIcon Icon="@Icons.Material.Filled.CalendarToday" /><strong>@Room.CreatedAt.ToString("MMM yyyy")</strong><span>Added</span></div>
+    </div>
+
+    <div class="room-tools-heading">
+        <MudText Typo="Typo.subtitle1">Tools in this room</MudText>
+        <MudText Typo="Typo.caption">@Room.Tools.Count item@(Room.Tools.Count == 1 ? string.Empty : "s")</MudText>
+    </div>
+
+    @if (Room.Tools.Count == 0)
+    {
+        <div class="room-tools-empty">
+            <MudIcon Icon="@Icons.Material.Filled.Inventory2" />
+            <MudText Typo="Typo.body2">No tools have been added to this room yet.</MudText>
+        </div>
+    }
+    else
+    {
+        <div class="room-tools-list">
+            @foreach (var tool in Room.Tools)
+            {
+                <div class="room-tool-row">
+                    <div class="room-tool-icon"><MudIcon Icon="@Icons.Material.Filled.Build" /></div>
+                    <div>
+                        <MudText Typo="Typo.body1">@tool.Name</MudText>
+                        <MudText Typo="Typo.caption">@(tool.Brand ?? "No brand")@(string.IsNullOrWhiteSpace(tool.Model) ? string.Empty : $" • {tool.Model}")</MudText>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="room-detail-actions">
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.Close" OnClick="Close">Close</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" OnClick="Edit">Edit room</MudButton>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Room Room { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private Task Edit() => OnEdit.InvokeAsync();
+
+    private Task Close() => OnClose.InvokeAsync();
+
+}
