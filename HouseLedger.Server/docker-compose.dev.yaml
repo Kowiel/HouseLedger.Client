@@ -17,5 +17,24 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres-session:
+    image: postgres:16-alpine
+    container_name: houseledger-postgres-session-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_SESSION__DB}
+      POSTGRES_USER: ${POSTGRES_SESSION__USER}
+      POSTGRES_PASSWORD: ${POSTGRES_SESSION__PASSWORD}
+    ports:
+      - "${POSTGRES_SESSION__PORT}:5432"
+    volumes:
+      - houseledger-postgres-session-dev-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_SESSION__USER} -d $${POSTGRES_SESSION__DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   houseledger-postgres-dev-data:
+  houseledger-postgres-session-dev-data:
