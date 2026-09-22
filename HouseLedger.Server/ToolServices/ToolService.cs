@@ -14,7 +14,7 @@ namespace HouseLedger.Server.ToolServices
         }
         public async Task<Tool> CreateAsync(Tool tool)
         {
-            tool.Id = Guid.NewGuid();
+            tool.Id = Guid.CreateVersion7();
             tool.CreatedAt = DateTime.UtcNow;
 
             _db.Tools.Add(tool);

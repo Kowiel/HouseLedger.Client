@@ -6,7 +6,7 @@ namespace HouseLedger.Shared.Models
 {
     public class UserSession
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.CreateVersion7();
 
         public Guid UserId { get; set; }
 

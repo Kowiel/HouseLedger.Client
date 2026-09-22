@@ -2,7 +2,7 @@
 {
     public class Tool
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.CreateVersion7();
 
         public string Name { get; set; } = null!;
         public string? Description { get; set; }

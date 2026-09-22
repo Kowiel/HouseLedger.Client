@@ -24,6 +24,26 @@ namespace HouseLedger.Server.Data
                 .HasIndex(user => user.NormalizedEmail)
                 .IsUnique()
                 .HasDatabaseName("EmailIndex");
+
+            builder.Entity<IdentityRole<Guid>>()
+                .Property(role => role.Id)
+                .HasValueGenerator<UuidV7ValueGenerator>();
+
+            builder.Entity<AppUser>()
+                .Property(user => user.Id)
+                .HasValueGenerator<UuidV7ValueGenerator>();
+
+            builder.Entity<Contact>()
+                .Property(contact => contact.Id)
+                .HasValueGenerator<UuidV7ValueGenerator>();
+
+            builder.Entity<Room>()
+                .Property(room => room.Id)
+                .HasValueGenerator<UuidV7ValueGenerator>();
+
+            builder.Entity<Tool>()
+                .Property(tool => tool.Id)
+                .HasValueGenerator<UuidV7ValueGenerator>();
         }
     }
 

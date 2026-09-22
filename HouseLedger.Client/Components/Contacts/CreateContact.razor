@@ -39,7 +39,7 @@
 
     private Task Save() => OnSaved.InvokeAsync(new Contact
     {
-        Id = Guid.NewGuid(),
+        Id = Guid.CreateVersion7(),
         DisplayName = model.DisplayName,
         Email = model.Email,
         PhoneNumber = model.PhoneNumber,

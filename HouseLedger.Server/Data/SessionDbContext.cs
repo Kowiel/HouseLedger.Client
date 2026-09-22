@@ -20,6 +20,9 @@ namespace HouseLedger.Server.Data
             {
                 entity.HasKey(x => x.Id);
 
+                entity.Property(x => x.Id)
+                    .HasValueGenerator<UuidV7ValueGenerator>();
+
                 entity.HasIndex(x => x.UserId);
 
                 entity.HasIndex(x => x.RefreshTokenHash)
