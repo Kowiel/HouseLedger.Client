@@ -117,14 +117,14 @@
 
     private static List<Tool> CreateTools() =>
     [
-        new() { Id = Guid.NewGuid(), Name = "Cordless drill", Description = "18V compact drill", Brand = "Makita", Model = "DHP485", SerialNumber = "MK-20481", Room = new Room { Name = "Garage" } },
-        new() { Id = Guid.NewGuid(), Name = "Step ladder", Description = "6 ft. folding step ladder", Brand = "Werner", Model = "6006", Room = new Room { Name = "Garage" }, LentToContact = new Contact { DisplayName = "Alex Johnson" }, LentAt = DateTime.UtcNow.AddDays(-10) },
-        new() { Id = Guid.NewGuid(), Name = "Pressure washer", Description = "Electric pressure washer", Brand = "Karcher", Model = "K2", Room = new Room { Name = "Garden shed" }, Notes = "Store in the garage" },
-        new() { Id = Guid.NewGuid(), Name = "Circular saw", Description = "7-1/4 in. circular saw", Brand = "DeWalt", Model = "DWE575", Room = new Room { Name = "Garage" }, LentToContact = new Contact { DisplayName = "Morgan Lee" }, LentAt = DateTime.UtcNow.AddDays(-4) },
-        new() { Id = Guid.NewGuid(), Name = "Garden trimmer", Description = "Battery-powered trimmer", Brand = "Ryobi", Model = "P2009", Room = new Room { Name = "Garden shed" }, Notes = "Includes spare battery" },
-        new() { Id = Guid.NewGuid(), Name = "Socket set", Description = "84-piece mechanic socket set", Brand = "Craftsman", Model = "CMMT120", SerialNumber = "CR-91832", Room = new Room { Name = "Garage" } },
-        new() { Id = Guid.NewGuid(), Name = "Orbital sander", Description = "5 in. random orbital sander", Brand = "Bosch", Model = "ROS20VSC", Room = new Room { Name = "Garage" }, LentToContact = new Contact { DisplayName = "Taylor Smith" }, LentAt = DateTime.UtcNow.AddDays(-2) },
-        new() { Id = Guid.NewGuid(), Name = "Workbench vise", Description = "Heavy-duty bench vise", Brand = "Yost", Model = "LV-4", Room = new Room { Name = "Garage" } }
+        new() { Id = Guid.CreateVersion7(), Name = "Cordless drill", Description = "18V compact drill", Brand = "Makita", Model = "DHP485", SerialNumber = "MK-20481", Room = new Room { Name = "Garage" } },
+        new() { Id = Guid.CreateVersion7(), Name = "Step ladder", Description = "6 ft. folding step ladder", Brand = "Werner", Model = "6006", Room = new Room { Name = "Garage" }, LentToContact = new Contact { DisplayName = "Alex Johnson" }, LentAt = DateTime.UtcNow.AddDays(-10) },
+        new() { Id = Guid.CreateVersion7(), Name = "Pressure washer", Description = "Electric pressure washer", Brand = "Karcher", Model = "K2", Room = new Room { Name = "Garden shed" }, Notes = "Store in the garage" },
+        new() { Id = Guid.CreateVersion7(), Name = "Circular saw", Description = "7-1/4 in. circular saw", Brand = "DeWalt", Model = "DWE575", Room = new Room { Name = "Garage" }, LentToContact = new Contact { DisplayName = "Morgan Lee" }, LentAt = DateTime.UtcNow.AddDays(-4) },
+        new() { Id = Guid.CreateVersion7(), Name = "Garden trimmer", Description = "Battery-powered trimmer", Brand = "Ryobi", Model = "P2009", Room = new Room { Name = "Garden shed" }, Notes = "Includes spare battery" },
+        new() { Id = Guid.CreateVersion7(), Name = "Socket set", Description = "84-piece mechanic socket set", Brand = "Craftsman", Model = "CMMT120", SerialNumber = "CR-91832", Room = new Room { Name = "Garage" } },
+        new() { Id = Guid.CreateVersion7(), Name = "Orbital sander", Description = "5 in. random orbital sander", Brand = "Bosch", Model = "ROS20VSC", Room = new Room { Name = "Garage" }, LentToContact = new Contact { DisplayName = "Taylor Smith" }, LentAt = DateTime.UtcNow.AddDays(-2) },
+        new() { Id = Guid.CreateVersion7(), Name = "Workbench vise", Description = "Heavy-duty bench vise", Brand = "Yost", Model = "LV-4", Room = new Room { Name = "Garage" } }
     ];
     }
 }

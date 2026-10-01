@@ -131,15 +131,15 @@
 
     private static List<Room> CreateRooms() =>
     [
-        new() { Id = Guid.NewGuid(), Name = "Garage", Description = "Tools, equipment, and storage", Tools =
-            [new() { Id = Guid.NewGuid(), Name = "Cordless drill", Description = "18V compact drill", Brand = "Makita" }, new() { Id = Guid.NewGuid(), Name = "Step ladder", Description = "6 ft. folding ladder", Brand = "Werner" }] },
-        new() { Id = Guid.NewGuid(), Name = "Kitchen", Description = "Cooking and dining essentials", Tools =
-            [new() { Id = Guid.NewGuid(), Name = "Stand mixer", Description = "5-quart mixer", Brand = "KitchenAid" }] },
-        new() { Id = Guid.NewGuid(), Name = "Living room", Description = "Shared living space", Tools =
-            [new() { Id = Guid.NewGuid(), Name = "Projector", Description = "HD home projector", Brand = "Epson" }] },
-        new() { Id = Guid.NewGuid(), Name = "Garden shed", Description = "Outdoor and garden equipment", Tools =
-            [new() { Id = Guid.NewGuid(), Name = "Pressure washer", Description = "Electric pressure washer", Brand = "Karcher" }, new() { Id = Guid.NewGuid(), Name = "Garden trimmer", Description = "Battery-powered trimmer", Brand = "Ryobi" }] },
-        new() { Id = Guid.NewGuid(), Name = "Home office", Description = "Work and study area" },
-        new() { Id = Guid.NewGuid(), Name = "Utility room", Description = "Cleaning and household supplies" }
+        new() { Id = Guid.CreateVersion7(), Name = "Garage", Description = "Tools, equipment, and storage", Tools =
+            [new() { Id = Guid.CreateVersion7(), Name = "Cordless drill", Description = "18V compact drill", Brand = "Makita" }, new() { Id = Guid.CreateVersion7(), Name = "Step ladder", Description = "6 ft. folding ladder", Brand = "Werner" }] },
+        new() { Id = Guid.CreateVersion7(), Name = "Kitchen", Description = "Cooking and dining essentials", Tools =
+            [new() { Id = Guid.CreateVersion7(), Name = "Stand mixer", Description = "5-quart mixer", Brand = "KitchenAid" }] },
+        new() { Id = Guid.CreateVersion7(), Name = "Living room", Description = "Shared living space", Tools =
+            [new() { Id = Guid.CreateVersion7(), Name = "Projector", Description = "HD home projector", Brand = "Epson" }] },
+        new() { Id = Guid.CreateVersion7(), Name = "Garden shed", Description = "Outdoor and garden equipment", Tools =
+            [new() { Id = Guid.CreateVersion7(), Name = "Pressure washer", Description = "Electric pressure washer", Brand = "Karcher" }, new() { Id = Guid.CreateVersion7(), Name = "Garden trimmer", Description = "Battery-powered trimmer", Brand = "Ryobi" }] },
+        new() { Id = Guid.CreateVersion7(), Name = "Home office", Description = "Work and study area" },
+        new() { Id = Guid.CreateVersion7(), Name = "Utility room", Description = "Cleaning and household supplies" }
     ];
 }

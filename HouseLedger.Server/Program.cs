@@ -27,17 +27,36 @@ namespace HouseLedger.Server
             var dbUser = builder.Configuration["POSTGRES:USER"]; 
             var dbPassword = builder.Configuration["POSTGRES:PASSWORD"];
 
+            var sessionDbHost = builder.Configuration["POSTGRES_SESSION:HOST"];
+            var sessionDbPort = builder.Configuration["POSTGRES_SESSION:PORT"];
+            var sessionDbName = builder.Configuration["POSTGRES_SESSION:DB"];
+            var sessionDbUser = builder.Configuration["POSTGRES_SESSION:USER"];
+            var sessionDbPassword = builder.Configuration["POSTGRES_SESSION:PASSWORD"];
+
             if (string.IsNullOrWhiteSpace(dbPassword))
             {
                 throw new InvalidOperationException(
                     $"Database password is missing. Environment: {builder.Environment.EnvironmentName}. File tried: {envFile}");
             }
 
+            if (string.IsNullOrWhiteSpace(sessionDbPassword))
+            {
+                throw new InvalidOperationException(
+                    $"Session database password is missing. Environment: {builder.Environment.EnvironmentName}. File tried: {envFile}");
+            }
+
+
             var connectionString =
                 $"Host={dbHost};Port={dbPort};Database={dbName};UserName={dbUser};Password={dbPassword}";
 
+            var sessionConnectionString =
+                $"Host={sessionDbHost};Port={sessionDbPort};Database={sessionDbName};Username={sessionDbUser};Password={sessionDbPassword}";
+
             builder.Services.AddDbContext<HouseLedgerDbContext>(options =>
                 options.UseNpgsql(connectionString));
+
+            builder.Services.AddDbContext<SessionDbContext>(options =>
+                options.UseNpgsql(sessionConnectionString));
 
 
             builder.Services.AddScoped<IToolService, ToolService>();

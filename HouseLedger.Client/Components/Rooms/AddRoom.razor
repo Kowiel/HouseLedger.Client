@@ -39,7 +39,7 @@
 
     private Task Save() => OnSaved.InvokeAsync(new Room
     {
-        Id = Guid.NewGuid(),
+        Id = Guid.CreateVersion7(),
         Name = model.Name,
         Description = model.Description
     });

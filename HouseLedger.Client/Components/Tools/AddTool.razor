@@ -40,7 +40,7 @@
 
     private Task Save(EditContext context) => OnSaved.InvokeAsync(new Tool
     {
-        Id = Guid.NewGuid(),
+        Id = Guid.CreateVersion7(),
         Name = model.Name,
         Description = model.Description,
         Brand = model.Brand,

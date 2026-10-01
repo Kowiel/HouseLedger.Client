@@ -2,7 +2,7 @@
 {
     public class Contact
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.CreateVersion7();
 
         public string DisplayName { get; set; } = null!;
         public string? PhoneNumber { get; set; }

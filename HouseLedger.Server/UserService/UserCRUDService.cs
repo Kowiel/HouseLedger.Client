@@ -34,7 +34,7 @@ namespace HouseLedger.Server.UserService
                 PhoneNumber = request.PhoneNumber,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                DisplayName =request.UserName.ToLower(),
+                DisplayName = request.UserName.ToLowerInvariant(),
                 CreatedDate = DateTime.UtcNow
             };
 
