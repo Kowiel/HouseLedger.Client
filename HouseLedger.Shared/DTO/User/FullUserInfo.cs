@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HouseLedger.Shared.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -17,5 +18,24 @@ namespace HouseLedger.Shared.DTO.User
         public string LastName { get; set; }
         public string? DisplayName { get; set; }
         public DateTime? CreatedDate { get; set; }
+
+        public static FullUserInfo FromEntity(AppUser userEntity)
+        {
+            return new FullUserInfo
+            {
+                Id = userEntity.Id,
+                UserName = userEntity.UserName,
+                NormalizedUserName = userEntity.NormalizedUserName,
+                EmailConfirmed = userEntity.EmailConfirmed,
+                Email = userEntity.Email,
+                NormalizedEmail = userEntity.NormalizedEmail,
+                PhoneNumber = userEntity.PhoneNumber,
+                FirstName = userEntity.FirstName,
+                LastName = userEntity.LastName,
+                DisplayName = userEntity.DisplayName,
+                CreatedDate = userEntity.CreatedDate
+            };
+        
+        }
     }
 }

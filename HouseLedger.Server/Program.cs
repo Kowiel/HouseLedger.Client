@@ -1,4 +1,5 @@
 using HouseLedger.Server.Data;
+using HouseLedger.Server.Token_Sesion_Service;
 using HouseLedger.Server.ToolServices;
 using HouseLedger.Server.UserService;
 using HouseLedger.Shared.Models;
@@ -20,6 +21,8 @@ namespace HouseLedger.Server
             builder.Configuration.AddInMemoryCollection(ReadEnvFile(envFile));
 
             builder.Services.AddControllers();
+
+            // Configure database connection strings from environment variables
 
             var dbHost = builder.Configuration["POSTGRES:HOST"];
             var dbPort = builder.Configuration["POSTGRES:PORT"];
@@ -52,19 +55,24 @@ namespace HouseLedger.Server
             var sessionConnectionString =
                 $"Host={sessionDbHost};Port={sessionDbPort};Database={sessionDbName};Username={sessionDbUser};Password={sessionDbPassword}";
 
+            // The Database Contexts are registered with the dependency 
             builder.Services.AddDbContext<HouseLedgerDbContext>(options =>
                 options.UseNpgsql(connectionString));
 
             builder.Services.AddDbContext<SessionDbContext>(options =>
                 options.UseNpgsql(sessionConnectionString));
 
+            // Configure JwtOptions from appsettings.json and environment variables
+
+            builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+
+
+            //Register services
 
             builder.Services.AddScoped<IToolService, ToolService>();
             builder.Services.AddScoped<IUserCRUDService, UserCRUDService>();
-
-
-
-
+            builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddScoped<ISessionService, SessionService>();
 
 
             builder.Services

@@ -1,6 +1,7 @@
 ﻿using HouseLedger.Server.StaticClasses;
 using HouseLedger.Server.ToolServices;
 using HouseLedger.Server.UserService;
+using HouseLedger.Shared.DTO.Auth;
 using HouseLedger.Shared.DTO.User;
 using HouseLedger.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -40,6 +41,18 @@ namespace HouseLedger.Server.Controllers
                 return BadRequest(userInfo.Message);
             }
             return Ok(userInfo.Data);
+        }
+
+        [HttpGet("testservice/{userId:guid}", Name = "TestUserService")]
+        public async Task<ActionResult<TokenResponse>> TestUserServiceAsync([FromRoute] Guid userId)
+        {
+            var result = await _userCrudService.TestService(userId);
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result.Data);
         }
 
         [HttpPost("createuser", Name = "CreateUser")]

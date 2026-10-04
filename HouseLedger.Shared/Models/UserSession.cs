@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HouseLedger.Shared.Models
 {
@@ -11,6 +12,9 @@ namespace HouseLedger.Shared.Models
         public Guid UserId { get; set; }
 
         public string RefreshTokenHash { get; set; } = string.Empty;
+
+        [NotMapped]
+        public string RefreshToken { get; set; } = string.Empty;
 
         public DateTime CreatedAtUtc { get; set; }
 
