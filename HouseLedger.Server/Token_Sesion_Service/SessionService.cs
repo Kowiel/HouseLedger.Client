@@ -61,7 +61,7 @@ namespace HouseLedger.Server.Token_Sesion_Service
             var now = DateTime.UtcNow;
             var userSession = new UserSession
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 UserId = user.Id,
                 RefreshToken = refreshToken,
                 RefreshTokenHash = HashToken(refreshToken),

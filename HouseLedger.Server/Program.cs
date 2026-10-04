@@ -3,8 +3,11 @@ using HouseLedger.Server.Token_Sesion_Service;
 using HouseLedger.Server.ToolServices;
 using HouseLedger.Server.UserService;
 using HouseLedger.Shared.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace HouseLedger.Server
 {
@@ -64,7 +67,35 @@ namespace HouseLedger.Server
 
             // Configure JwtOptions from appsettings.json and environment variables
 
-            builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+            builder.Services
+                .AddOptions<JwtOptions>()
+                .Bind(builder.Configuration.GetRequiredSection("Jwt"))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            // Configure JWT authentication
+
+            builder.Services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    var jwt = builder.Configuration
+                        .GetRequiredSection("Jwt")
+                        .Get<JwtOptions>()!;
+
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidIssuer = jwt.Issuer,
+                        ValidAudience = jwt.Audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(jwt.SigningKey)),
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
 
 
             //Register services
