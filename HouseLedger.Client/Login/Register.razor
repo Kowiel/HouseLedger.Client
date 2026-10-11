@@ -1,6 +1,11 @@
 ﻿@page "/register"
 @layout AuthLayout
 @using System.ComponentModel.DataAnnotations
+@using HouseLedger.Client.Auth
+@using HouseLedger.Shared.DTO.User
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <div class="register-page">
     <div class="register-heading">
@@ -49,8 +54,8 @@
                                   @bind-Value="model.RetypePassword" For="@(() => model.RetypePassword)" InputType="InputType.Password" />
                 </div>
             </MudCardContent>
-            <MudCardActions Class="register-actions">
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" Class="register-button">Create account</MudButton>
+            <MudCardActions Class="register-actions" >
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" Class="register-button" Disabled="@isSubmitting">Create account</MudButton>
             </MudCardActions>
         </MudCard>
     </EditForm>
@@ -59,47 +64,29 @@
 </div>
 
 @code {
-    RegisterAccountForm model = new RegisterAccountForm();
-    bool success;
+    private CreateUserRequest model = new CreateUserRequest();
+    private bool isSubmitting;
 
-    public class RegisterAccountForm
+
+    private async Task OnValidSubmit(EditContext context)
     {
-        [Required]
-        [MinLength(4), MaxLength(100)]
-        public string UserName { get; set; } = "TestUser";
+        isSubmitting = true;
+        try
+        {
+            var result = await AuthService.RegisterAsync(model);
+            Console.WriteLine(model);
+            if (!result.Success)
+            {
+                Snackbar.Add(result.Message ?? "Registration failed.", Severity.Error);
+                return;
+            }
 
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = string.Empty;
-
-        [Required]
-        [MinLength(8)]
-        public string Password { get; set; } = string.Empty;
-
-        [Required]
-        [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
-        public string RetypePassword { get; set; } = string.Empty;
-
-        [Phone]
-        public string? PhoneNumber { get; set; }
-
-        [Required]
-        [MaxLength(50)]
-        public string FirstName { get; set; } = string.Empty;
-
-        [Required]
-        [MaxLength(50)]
-        public string LastName { get; set; } = string.Empty;
-
-
-
-
-
-    }
-
-    private void OnValidSubmit(EditContext context)
-    {
-        success = true;
-        StateHasChanged();
+            Snackbar.Add("Account created successfully. You can now sign in.", Severity.Success);
+            Navigation.NavigateTo("/login");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
     }
 }

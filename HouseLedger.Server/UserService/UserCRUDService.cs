@@ -1,6 +1,4 @@
 ﻿using HouseLedger.Server.Data;
-using HouseLedger.Server.Token_Sesion_Service;
-using HouseLedger.Shared.DTO.Auth;
 using HouseLedger.Shared.DTO.User;
 using HouseLedger.Shared.Models;
 using HouseLedger.Shared.Response;
@@ -17,19 +15,13 @@ namespace HouseLedger.Server.UserService
     {
         private readonly HouseLedgerDbContext _dbContext;
         private readonly UserManager<AppUser> _userManager;
-        private readonly ITokenService _tokenService;
-        private readonly ISessionService _sessionService;
 
         public UserCRUDService(
             HouseLedgerDbContext dbContext,
-            UserManager<AppUser> userManager,
-            ITokenService tokenService,
-            ISessionService sessionService)
+            UserManager<AppUser> userManager)
         {
             _dbContext = dbContext;
             _userManager = userManager;
-            _tokenService = tokenService;
-            _sessionService = sessionService;
         }
         public async Task<ServiceResponse<bool>> CreateUser(CreateUserRequest request)
         {
@@ -116,45 +108,6 @@ namespace HouseLedger.Server.UserService
                 .SingleOrDefaultAsync();
 
             return new ServiceResponse<BasicUserInfo?> { Data = basicUserInfo, Success = basicUserInfo != null ? true : false, Message = basicUserInfo != null ? "User found." : "User not found." };
-        }
-
-        public async Task<ServiceResponse<TokenResponse>> TestService(Guid userId)
-        {
-            var appUser = await _userManager.FindByIdAsync(userId.ToString());
-            if (appUser is null)
-            {
-                return new ServiceResponse<TokenResponse>
-                {
-                    Data = null,
-                    Success = false,
-                    Message = "User not found."
-                };
-            }
-
-            var user = FullUserInfo.FromEntity(appUser);
-            var sessionResponse = await _sessionService.CreateSession(user);
-            if (!sessionResponse.Success || sessionResponse.Data is null)
-            {
-                return new ServiceResponse<TokenResponse>
-                {
-                    Data = null,
-                    Success = false,
-                    Message = sessionResponse.Message ?? "Session could not be created."
-                };
-            }
-
-            var token = _tokenService.CreateAccessToken(appUser, sessionResponse.Data);
-            return new ServiceResponse<TokenResponse>
-            {
-                Data = new TokenResponse
-                {
-                    AccessToken = token,
-                    RefreshToken = sessionResponse.Data.RefreshToken,
-                    SessionId = sessionResponse.Data.Id
-                },
-                Success = true,
-                Message = "Token and session generated successfully."
-            };
         }
 
         public async Task<ServiceResponse<bool>> UpdateUser(UpdateUserRequest request, Guid userId)

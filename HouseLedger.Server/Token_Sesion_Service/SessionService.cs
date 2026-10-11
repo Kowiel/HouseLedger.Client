@@ -9,6 +9,7 @@ namespace HouseLedger.Server.Token_Sesion_Service
 {
     public class SessionService : ISessionService
     {
+        private static readonly TimeSpan InactivityTimeout = TimeSpan.FromMinutes(10);
         private readonly SessionDbContext _sessionDb;
         public SessionService(SessionDbContext sessionDb)
         {
@@ -45,6 +46,59 @@ namespace HouseLedger.Server.Token_Sesion_Service
             };
         }
 
+        // Will require refactoring to use a stored procedure for the rotation to avoid race conditions. For now, this is a simple implementation.
+        public async Task<ServiceResponse<UserSession>> RotateRefreshToken(Guid sessionId, string refreshToken)
+        {
+            if (sessionId == Guid.Empty || string.IsNullOrWhiteSpace(refreshToken))
+            {
+                return RotationFailure("A valid session ID and refresh token are required.");
+            }
+
+            var now = DateTime.UtcNow;
+            var newRefreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+            var newRefreshTokenHash = HashToken(newRefreshToken);
+            var oldRefreshTokenHash = HashToken(refreshToken);
+            var userId = await _sessionDb.UserSessions
+                .Where(session => session.Id == sessionId)
+                .Select(session => (Guid?)session.UserId)
+                .SingleOrDefaultAsync();
+
+            if (userId is null)
+            {
+                return RotationFailure("The session could not be found.");
+            }
+
+            var updated = await _sessionDb.UserSessions
+                .Where(session =>
+                    session.Id == sessionId &&
+                    !session.IsRevoked &&
+                    session.ExpiresAtUtc > now &&
+                    session.LastActivityAtUtc > now.Subtract(InactivityTimeout) &&
+                    session.RefreshTokenHash == oldRefreshTokenHash)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(session => session.RefreshTokenHash, newRefreshTokenHash)
+                    .SetProperty(session => session.LastActivityAtUtc, now));
+
+            if (updated != 1)
+            {
+                return RotationFailure("The session is invalid, expired, revoked, or the refresh token has already been used.");
+            }
+
+            return new ServiceResponse<UserSession>
+            {
+                Data = new UserSession
+                {
+                    Id = sessionId,
+                    UserId = userId.Value,
+                    RefreshToken = newRefreshToken,
+                    RefreshTokenHash = newRefreshTokenHash,
+                    LastActivityAtUtc = now
+                },
+                Success = true,
+                Message = "Refresh token rotated successfully."
+            };
+        }
+
         public async Task<ServiceResponse<UserSession>> CreateSession(FullUserInfo user)
         {
             if (user is null || user.Id == Guid.Empty)
@@ -59,6 +113,14 @@ namespace HouseLedger.Server.Token_Sesion_Service
 
             var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
             var now = DateTime.UtcNow;
+            await _sessionDb.UserSessions
+                .Where(session =>
+                    session.UserId == user.Id &&
+                    !session.IsRevoked &&
+                    session.ExpiresAtUtc > now)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(session => session.IsRevoked, true));
+
             var userSession = new UserSession
             {
                 Id = Guid.CreateVersion7(),
@@ -97,7 +159,8 @@ namespace HouseLedger.Server.Token_Sesion_Service
                 return Failure("The session could not be found or the refresh token is invalid.");
             }
 
-            if (session.IsRevoked || session.ExpiresAtUtc <= DateTime.UtcNow)
+            var now = DateTime.UtcNow;
+            if (session.IsRevoked || session.ExpiresAtUtc <= now || session.LastActivityAtUtc <= now.Subtract(InactivityTimeout))
             {
                 return Failure("The session is revoked or expired.");
             }
@@ -135,6 +198,16 @@ namespace HouseLedger.Server.Token_Sesion_Service
             return new ServiceResponse<bool>
             {
                 Data = false,
+                Success = false,
+                Message = message
+            };
+        }
+
+        private static ServiceResponse<UserSession> RotationFailure(string message)
+        {
+            return new ServiceResponse<UserSession>
+            {
+                Data = null,
                 Success = false,
                 Message = message
             };

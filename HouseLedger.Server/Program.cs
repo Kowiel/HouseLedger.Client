@@ -1,4 +1,5 @@
 using HouseLedger.Server.Data;
+using HouseLedger.Server.AuthServices;
 using HouseLedger.Server.Token_Sesion_Service;
 using HouseLedger.Server.ToolServices;
 using HouseLedger.Server.UserService;
@@ -102,6 +103,7 @@ namespace HouseLedger.Server
 
             builder.Services.AddScoped<IToolService, ToolService>();
             builder.Services.AddScoped<IUserCRUDService, UserCRUDService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<ISessionService, SessionService>();
 

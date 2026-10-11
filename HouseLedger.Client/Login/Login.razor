@@ -1,6 +1,11 @@
 ﻿@page "/login"
 @layout AuthLayout
 @using System.ComponentModel.DataAnnotations
+@using HouseLedger.Client.Auth
+@using HouseLedger.Shared.DTO.Auth
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <div class="login-page">
     <div class="login-heading">
@@ -40,8 +45,22 @@
 @code {
     private LoginForm model = new();
 
-    private void OnValidSubmit(EditContext context)
+    private async Task OnValidSubmit(EditContext context)
     {
+        var result = await AuthService.LoginAsync(new LoginRequest
+        {
+            Email = model.Email,
+            Password = model.Password
+        });
+
+        if (!result.Success || result.Data is null)
+        {
+            Snackbar.Add(result.Message ?? "Login failed.", Severity.Error);
+            return;
+        }
+
+        Snackbar.Add("Login successful.", Severity.Success);
+        Navigation.NavigateTo("/");
     }
 
     private sealed class LoginForm

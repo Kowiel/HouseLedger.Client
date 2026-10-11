@@ -43,18 +43,6 @@ namespace HouseLedger.Server.Controllers
             return Ok(userInfo.Data);
         }
 
-        [HttpGet("testservice/{userId:guid}", Name = "TestUserService")]
-        public async Task<ActionResult<TokenResponse>> TestUserServiceAsync([FromRoute] Guid userId)
-        {
-            var result = await _userCrudService.TestService(userId);
-            if (!result.Success)
-            {
-                return BadRequest(result.Message);
-            }
-
-            return Ok(result.Data);
-        }
-
         [HttpPost("createuser", Name = "CreateUser")]
         public async Task<ActionResult<bool>> CreateUserAsync([FromBody] CreateUserRequest request)
         {

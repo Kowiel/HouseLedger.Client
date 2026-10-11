@@ -1,5 +1,4 @@
-﻿using HouseLedger.Shared.DTO.Auth;
-using HouseLedger.Shared.DTO.User;
+﻿using HouseLedger.Shared.DTO.User;
 using HouseLedger.Shared.Response;
 
 namespace HouseLedger.Server.UserService
@@ -12,8 +11,5 @@ namespace HouseLedger.Server.UserService
         Task<ServiceResponse<bool>> DeleteUser(Guid userId);
         Task<ServiceResponse<BasicUserInfo?>> GetUserById(Guid userId);
         Task<ServiceResponse<FullUserInfo?>> GetFullUserById(Guid userId);
-
-        Task<ServiceResponse<TokenResponse>> TestService(Guid userId);
-
     }
 }
