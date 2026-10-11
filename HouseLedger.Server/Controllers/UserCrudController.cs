@@ -4,7 +4,10 @@ using HouseLedger.Server.UserService;
 using HouseLedger.Shared.DTO.Auth;
 using HouseLedger.Shared.DTO.User;
 using HouseLedger.Shared.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 
 
@@ -12,6 +15,7 @@ namespace HouseLedger.Server.Controllers
 {
     [ApiController]
     [Route(ApiRoutes.UserCRUD)]
+    [Authorize]
     public class UserCrudController:ControllerBase
     {
         private readonly IUserCRUDService _userCrudService;
@@ -21,10 +25,16 @@ namespace HouseLedger.Server.Controllers
             _userCrudService = userCrudService;
         }
 
-        [HttpGet("getFullUserInfo/{userId:guid}", Name = "GetFullUserInfo")]
-        public async Task<ActionResult<FullUserInfo>> GetUserInfoAsync([FromRoute] Guid userId)
+        [HttpGet("me", Name = "GetCurrentUserInfo")]
+        public async Task<ActionResult<FullUserInfo>> GetUserInfoAsync()
         {
-            var userInfo = await _userCrudService.GetFullUserById(userId);
+            var userId = GetCurrentUserId();
+            if (userId is null)
+            {
+                return Unauthorized();
+            }
+
+            var userInfo = await _userCrudService.GetFullUserById(userId.Value);
             if (userInfo.Success == false)
             {
                 return BadRequest(userInfo.Message);
@@ -32,10 +42,16 @@ namespace HouseLedger.Server.Controllers
             return Ok(userInfo.Data);
         }
 
-        [HttpGet("getBasicUserInfo/{userId:guid}", Name = "GetBasicUserInfo")]
-        public async Task<ActionResult<BasicUserInfo>> GetUserInfoBasicAsync([FromRoute] Guid userId)
+        [HttpGet("me/basic", Name = "GetCurrentBasicUserInfo")]
+        public async Task<ActionResult<BasicUserInfo>> GetUserInfoBasicAsync()
         {
-            var userInfo = await _userCrudService.GetUserById(userId);
+            var userId = GetCurrentUserId();
+            if (userId is null)
+            {
+                return Unauthorized();
+            }
+
+            var userInfo = await _userCrudService.GetUserById(userId.Value);
             if (userInfo.Success == false)
             {
                 return BadRequest(userInfo.Message);
@@ -44,6 +60,7 @@ namespace HouseLedger.Server.Controllers
         }
 
         [HttpPost("createuser", Name = "CreateUser")]
+        [AllowAnonymous]
         public async Task<ActionResult<bool>> CreateUserAsync([FromBody] CreateUserRequest request)
         {
             var result = await _userCrudService.CreateUser(request);
@@ -54,10 +71,16 @@ namespace HouseLedger.Server.Controllers
             return Ok(result.Data);
         }
 
-        [HttpDelete("deleteuser/{userId:guid}", Name = "DeleteUser")]
-        public async Task<ActionResult<bool>> DeleteUserAsync([FromRoute] Guid userId)
+        [HttpDelete("me", Name = "DeleteCurrentUser")]
+        public async Task<ActionResult<bool>> DeleteUserAsync()
         {
-            var result = await _userCrudService.DeleteUser(userId);
+            var userId = GetCurrentUserId();
+            if (userId is null)
+            {
+                return Unauthorized();
+            }
+
+            var result = await _userCrudService.DeleteUser(userId.Value);
             if (!result.Success)
             {
                 return BadRequest(result.Message);
@@ -66,25 +89,45 @@ namespace HouseLedger.Server.Controllers
 
         }
 
-        [HttpPut("updateuser/{userId:guid}", Name = "UpdateUser")]
-        public async Task<ActionResult<bool>> UpdateUserAsync([FromRoute] Guid userId, [FromBody] UpdateUserRequest request)
+        [HttpPut("me", Name = "UpdateCurrentUser")]
+        public async Task<ActionResult<bool>> UpdateUserAsync([FromBody] UpdateUserRequest request)
         {
-            var result = await _userCrudService.UpdateUser(request, userId);
+            var userId = GetCurrentUserId();
+            if (userId is null)
+            {
+                return Unauthorized();
+            }
+
+            var result = await _userCrudService.UpdateUser(request, userId.Value);
             if (!result.Success)
             {
                 return BadRequest(result.Message);
             }
             return Ok(result.Data);
         }
-        [HttpPut("updateuserpassword/{userId:guid}", Name = "UpdateUserPassword")]
-        public async Task<ActionResult<bool>> UpdateUserPasswordAsync([FromRoute] Guid userId, [FromBody] UpdateUserPasswordRequest request)
+        [HttpPut("me/password", Name = "UpdateCurrentUserPassword")]
+        public async Task<ActionResult<bool>> UpdateUserPasswordAsync([FromBody] UpdateUserPasswordRequest request)
         {
-            var result = await _userCrudService.UpdateUserPassword(request, userId);
+            var userId = GetCurrentUserId();
+            if (userId is null)
+            {
+                return Unauthorized();
+            }
+
+            var result = await _userCrudService.UpdateUserPassword(request, userId.Value);
             if (!result.Success)
             {
                 return BadRequest(result.Message);
             }
             return Ok(result.Data);
+        }
+
+        private Guid? GetCurrentUserId()
+        {
+            var claimValue = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+
+            return Guid.TryParse(claimValue, out var currentUserId) ? currentUserId : null;
         }
     }
 }

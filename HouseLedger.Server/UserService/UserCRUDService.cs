@@ -122,6 +122,7 @@ namespace HouseLedger.Server.UserService
 
             user.DisplayName = request.DisplayName;
             user.Email = request.Email;
+            user.PhoneNumber = request.PhoneNumber;
             user.FirstName = request.FirstName;
             user.LastName = request.LastName;
            

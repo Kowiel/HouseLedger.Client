@@ -96,6 +96,26 @@ namespace HouseLedger.Server
                         ValidateLifetime = true,
                         ClockSkew = TimeSpan.Zero
                     };
+
+                     options.Events = new JwtBearerEvents
+                     {
+                         OnTokenValidated = async context =>
+                         {
+                             var sessionIdValue = context.Principal?.FindFirst("sid")?.Value;
+                             if (!Guid.TryParse(sessionIdValue, out var sessionId))
+                             {
+                                 context.Fail("The access token does not contain a valid session.");
+                                 return;
+                             }
+
+                             var sessionService = context.HttpContext.RequestServices
+                                 .GetRequiredService<ISessionService>();
+                             if (!await sessionService.ValidateAccessTokenSession(sessionId))
+                             {
+                                 context.Fail("The session has expired due to inactivity.");
+                             }
+                         }
+                     };
                 });
 
 

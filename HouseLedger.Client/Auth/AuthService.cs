@@ -14,6 +14,10 @@ namespace HouseLedger.Client.Auth
 
         public TokenResponse? CurrentToken => _currentToken;
 
+        public Guid? CurrentUserId => GetUserId(_currentToken?.AccessToken);
+
+        public event Action? AuthenticationStateChanged;
+
         public AuthService(HttpClient httpClient)
         {
             _httpClient = httpClient;
@@ -22,7 +26,6 @@ namespace HouseLedger.Client.Auth
         public async Task<ServiceResponse<bool>> RegisterAsync(CreateUserRequest request)
         {
             using var response = await _httpClient.PostAsJsonAsync("api/v1/user/crud/createuser", request);
-            Console.WriteLine(response);
             if (response.IsSuccessStatusCode)
             {
                 var created = await response.Content.ReadFromJsonAsync<bool>();
@@ -50,6 +53,7 @@ namespace HouseLedger.Client.Auth
             {
                 var token = await response.Content.ReadFromJsonAsync<TokenResponse>();
                 _currentToken = token;
+                AuthenticationStateChanged?.Invoke();
                 return new ServiceResponse<TokenResponse>
                 {
                     Data = token,
@@ -70,6 +74,41 @@ namespace HouseLedger.Client.Auth
         public void ClearAuthentication()
         {
             _currentToken = null;
+            AuthenticationStateChanged?.Invoke();
+        }
+
+        private static Guid? GetUserId(string? accessToken)
+        {
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                return null;
+            }
+
+            var tokenParts = accessToken.Split('.');
+            if (tokenParts.Length != 3)
+            {
+                return null;
+            }
+
+            try
+            {
+                var payload = tokenParts[1].Replace('-', '+').Replace('_', '/');
+                payload = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
+                using var document = JsonDocument.Parse(Convert.FromBase64String(payload));
+
+                return document.RootElement.TryGetProperty("sub", out var subject)
+                    && Guid.TryParse(subject.GetString(), out var userId)
+                    ? userId
+                    : null;
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
         }
 
         private static bool IsAccessTokenExpiring(string accessToken)
@@ -137,6 +176,7 @@ namespace HouseLedger.Client.Auth
                 if (!response.IsSuccessStatusCode)
                 {
                     _currentToken = null;
+                    AuthenticationStateChanged?.Invoke();
                     var message = await response.Content.ReadAsStringAsync();
                     return new ServiceResponse<TokenResponse>
                     {
@@ -148,6 +188,7 @@ namespace HouseLedger.Client.Auth
 
                 var token = await response.Content.ReadFromJsonAsync<TokenResponse>();
                 _currentToken = token;
+                AuthenticationStateChanged?.Invoke();
                 return new ServiceResponse<TokenResponse>
                 {
                     Data = token,
@@ -180,6 +221,7 @@ namespace HouseLedger.Client.Auth
             });
 
             _currentToken = null;
+            AuthenticationStateChanged?.Invoke();
             var message = await response.Content.ReadAsStringAsync();
             return new ServiceResponse<bool>
             {

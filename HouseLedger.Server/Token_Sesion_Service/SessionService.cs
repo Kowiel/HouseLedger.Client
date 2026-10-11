@@ -46,6 +46,23 @@ namespace HouseLedger.Server.Token_Sesion_Service
             };
         }
 
+        public async Task<bool> ValidateAccessTokenSession(Guid sessionId)
+        {
+            var now = DateTime.UtcNow;
+            var inactivityCutoff = now.Subtract(InactivityTimeout);
+
+            var updated = await _sessionDb.UserSessions
+                .Where(session =>
+                    session.Id == sessionId &&
+                    !session.IsRevoked &&
+                    session.ExpiresAtUtc > now &&
+                    session.LastActivityAtUtc > inactivityCutoff)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(session => session.LastActivityAtUtc, now));
+
+            return updated == 1;
+        }
+
         // Will require refactoring to use a stored procedure for the rotation to avoid race conditions. For now, this is a simple implementation.
         public async Task<ServiceResponse<UserSession>> RotateRefreshToken(Guid sessionId, string refreshToken)
         {

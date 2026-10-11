@@ -11,6 +11,7 @@ namespace HouseLedger.Server.Token_Sesion_Service
         Task<ServiceResponse<bool>> BlockSession(Guid sessionId, string refreshToken);
 
         Task<ServiceResponse<bool>> ValidateSession(Guid sessionId, string refreshToken);
+        Task<bool> ValidateAccessTokenSession(Guid sessionId);
 
     }
 }

@@ -1,3 +1,8 @@
+@using HouseLedger.Client.Auth
+@using HouseLedger.Client.UserService
+@inject IAuthService AuthService
+@inject IUserService UserService
+
 <MudCard Class="profile-card contacts-card" Elevation="6">
     <MudCardContent Class="profile-card-content">
         <div class="card-heading">
@@ -12,7 +17,7 @@
             <div class="contact-type"><MudIcon Icon="@Icons.Material.Filled.Email" /></div>
             <div class="contact-copy">
                 <MudText Typo="Typo.subtitle1">Email address</MudText>
-                <MudText Typo="Typo.body2">your.email@example.com</MudText>
+                <MudText Typo="Typo.body2">@(email ?? "Not provided")</MudText>
             </div>
             @if (emailVerified)
             {
@@ -28,7 +33,7 @@
             <div class="contact-type"><MudIcon Icon="@Icons.Material.Filled.Phone" /></div>
             <div class="contact-copy">
                 <MudText Typo="Typo.subtitle1">Phone number</MudText>
-                <MudText Typo="Typo.body2">+1 (555) 010-2040</MudText>
+                <MudText Typo="Typo.body2">@(phoneNumber ?? "Not provided")</MudText>
             </div>
             @if (phoneVerified)
             {
@@ -49,6 +54,24 @@
 @code {
     private bool emailVerified;
     private bool phoneVerified;
+    private string? email;
+    private string? phoneNumber;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = AuthService.CurrentUserId;
+        if (userId is null)
+        {
+            return;
+        }
+
+        var result = await UserService.GetBasicAsync();
+        if (result.Success && result.Data is not null)
+        {
+            email = result.Data.Email;
+            phoneNumber = result.Data.PhoneNumber;
+        }
+    }
 
     private void VerifyEmail()
     {

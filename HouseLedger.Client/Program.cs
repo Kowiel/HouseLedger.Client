@@ -1,5 +1,8 @@
 using MudBlazor.Services;
 using HouseLedger.Client.Auth;
+using HouseLedger.Client.UserService;
+using ClientUserService = HouseLedger.Client.UserService.UserService;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -18,6 +21,7 @@ namespace HouseLedger.Client
                 UriKind.Absolute);
 
             builder.Services.AddMudServices();
+            builder.Services.AddAuthorizationCore();
             builder.Services.AddScoped<IAuthService>(_ => new AuthService(new HttpClient
             {
                 BaseAddress = apiBaseUrl
@@ -27,6 +31,8 @@ namespace HouseLedger.Client
             {
                 BaseAddress = apiBaseUrl
             });
+            builder.Services.AddScoped<IUserService, ClientUserService>();
+            builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
 
             await builder.Build().RunAsync();
         }
