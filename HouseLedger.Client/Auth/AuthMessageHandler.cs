@@ -74,7 +74,7 @@ namespace HouseLedger.Client.Auth
 
         private async Task ClearAndRedirectAsync()
         {
-            await _authService.ClearAuthenticationAsync();
+            await _authService.ClearAuthenticationAsync("Your session ended or is no longer valid. Please sign in again.");
             _navigation.NavigateTo("/login");
         }
 

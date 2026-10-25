@@ -3,6 +3,7 @@ using HouseLedger.Client.Auth;
 using HouseLedger.Client.UserService;
 using ClientUserService = HouseLedger.Client.UserService.UserService;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
@@ -23,10 +24,13 @@ namespace HouseLedger.Client
 
             builder.Services.AddMudServices();
             builder.Services.AddAuthorizationCore();
+            var inactivityTimeoutMinutes = builder.Configuration.GetValue("Session:InactivityTimeoutMinutes", 10d);
             builder.Services.AddScoped<IAuthService>(serviceProvider => new AuthService(new HttpClient
             {
                 BaseAddress = apiBaseUrl
-            }, serviceProvider.GetRequiredService<IJSRuntime>()));
+            }, serviceProvider.GetRequiredService<IJSRuntime>(),
+                serviceProvider.GetRequiredService<NavigationManager>(),
+                TimeSpan.FromMinutes(inactivityTimeoutMinutes)));
             builder.Services.AddScoped<AuthMessageHandler>();
             builder.Services.AddScoped(sp =>
             {

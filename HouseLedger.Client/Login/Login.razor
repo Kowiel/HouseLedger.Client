@@ -7,6 +7,17 @@
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
+@if (!string.IsNullOrWhiteSpace(forcedLogoutMessage))
+{
+    <div class="logout-dialog-backdrop">
+        <section class="logout-dialog" role="alertdialog" aria-modal="true" aria-labelledby="logout-dialog-title">
+            <h2 id="logout-dialog-title">You were signed out</h2>
+            <p>@forcedLogoutMessage</p>
+            <button type="button" class="logout-dialog-close" @onclick="DismissForcedLogoutMessage">Close</button>
+        </section>
+    </div>
+}
+
 <div class="login-page">
     <div class="login-heading">
         <div class="welcome-icon"><MudIcon Icon="@Icons.Material.Filled.HomeWork" /></div>
@@ -44,6 +55,14 @@
 
 @code {
     private LoginForm model = new();
+    private string? forcedLogoutMessage;
+
+    protected override void OnInitialized()
+    {
+        forcedLogoutMessage = AuthService.ConsumeForcedLogoutMessage();
+    }
+
+    private void DismissForcedLogoutMessage() => forcedLogoutMessage = null;
 
     private async Task OnValidSubmit(EditContext context)
     {

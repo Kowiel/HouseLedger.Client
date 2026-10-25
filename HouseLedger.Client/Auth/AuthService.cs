@@ -3,6 +3,7 @@ using System.Text.Json;
 using HouseLedger.Shared.DTO.Auth;
 using HouseLedger.Shared.DTO.User;
 using HouseLedger.Shared.Response;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace HouseLedger.Client.Auth
@@ -11,6 +12,8 @@ namespace HouseLedger.Client.Auth
     {
         private readonly HttpClient _httpClient;
         private readonly IJSRuntime _jsRuntime;
+        private readonly NavigationManager _navigation;
+        private readonly TimeSpan _inactivityTimeout;
         private readonly SemaphoreSlim _refreshLock = new(1, 1);
         private readonly SemaphoreSlim _initializationLock = new(1, 1);
         private TokenResponse? _currentToken;
@@ -18,6 +21,8 @@ namespace HouseLedger.Client.Auth
         private string? _tabId;
         private int _storageSubscriptionId;
         private bool _initialized;
+        private bool _inactivityMonitorStarted;
+        private string? _forcedLogoutMessage;
         private const string LocalStorageKey = "houseLedger.authentication";
         private const string LegacySessionStorageKey = "houseLedger.tokenResponse";
 
@@ -25,12 +30,21 @@ namespace HouseLedger.Client.Auth
 
         public Guid? CurrentUserId => GetUserId(_currentToken?.AccessToken);
 
+        public string? ConsumeForcedLogoutMessage()
+        {
+            var message = _forcedLogoutMessage;
+            _forcedLogoutMessage = null;
+            return message;
+        }
+
         public event Action? AuthenticationStateChanged;
 
-        public AuthService(HttpClient httpClient, IJSRuntime jsRuntime)
+        public AuthService(HttpClient httpClient, IJSRuntime jsRuntime, NavigationManager navigation, TimeSpan inactivityTimeout)
         {
             _httpClient = httpClient;
             _jsRuntime = jsRuntime;
+            _navigation = navigation;
+            _inactivityTimeout = inactivityTimeout;
         }
 
         public async Task InitializeAsync()
@@ -74,6 +88,7 @@ namespace HouseLedger.Client.Auth
                 }
 
                 _initialized = true;
+                await UpdateInactivityMonitorAsync();
             }
             finally
             {
@@ -115,6 +130,7 @@ namespace HouseLedger.Client.Auth
                 if (token is not null)
                 {
                     await StoreTokenAsync(token);
+                    await UpdateInactivityMonitorAsync();
                 }
                 else
                 {
@@ -138,10 +154,16 @@ namespace HouseLedger.Client.Auth
             };
         }
 
-        public async Task ClearAuthenticationAsync()
+        public async Task ClearAuthenticationAsync(string? forcedLogoutMessage = null)
         {
             await InitializeAsync();
+            if (!string.IsNullOrWhiteSpace(forcedLogoutMessage))
+            {
+                _forcedLogoutMessage ??= forcedLogoutMessage;
+            }
+
             _currentToken = null;
+            await UpdateInactivityMonitorAsync();
             var session = await GetStoredAuthenticationAsync();
             if (session?.TabId == _tabId)
             {
@@ -152,6 +174,12 @@ namespace HouseLedger.Client.Auth
 
         public async ValueTask DisposeAsync()
         {
+            if (_inactivityMonitorStarted)
+            {
+                await _jsRuntime.InvokeVoidAsync("houseLedgerAuthStorage.stopInactivityMonitor");
+                _inactivityMonitorStarted = false;
+            }
+
             if (_storageSubscriptionId != 0)
             {
                 await _jsRuntime.InvokeVoidAsync("houseLedgerAuthStorage.unsubscribe", _storageSubscriptionId);
@@ -161,12 +189,13 @@ namespace HouseLedger.Client.Auth
         }
 
         [JSInvokable]
-        public Task OnAuthStorageChanged(string? storedAuthentication)
+        public async Task OnAuthStorageChanged(string? storedAuthentication)
         {
             var session = DeserializeStoredAuthentication(storedAuthentication);
             var token = session is not null && session.TabId == _tabId ? session.Token : null;
             var previousToken = _currentToken;
             _currentToken = token;
+            await UpdateInactivityMonitorAsync();
 
             if (previousToken?.AccessToken != token?.AccessToken ||
                 previousToken?.RefreshToken != token?.RefreshToken ||
@@ -175,7 +204,41 @@ namespace HouseLedger.Client.Auth
                 AuthenticationStateChanged?.Invoke();
             }
 
-            return Task.CompletedTask;
+        }
+
+        [JSInvokable]
+        public async Task OnInactivityTimeoutAsync()
+        {
+            if (_currentToken is null)
+            {
+                return;
+            }
+
+            await ClearAuthenticationAsync("You were logged out due to inactivity. Please sign in again.");
+            _navigation.NavigateTo("/login");
+        }
+
+        private async Task UpdateInactivityMonitorAsync()
+        {
+            if (_currentToken is null)
+            {
+                if (_inactivityMonitorStarted)
+                {
+                    await _jsRuntime.InvokeVoidAsync("houseLedgerAuthStorage.stopInactivityMonitor");
+                    _inactivityMonitorStarted = false;
+                }
+
+                return;
+            }
+
+            if (!_inactivityMonitorStarted)
+            {
+                await _jsRuntime.InvokeVoidAsync(
+                    "houseLedgerAuthStorage.startInactivityMonitor",
+                    _inactivityTimeout.TotalMilliseconds,
+                    _storageCallbackReference);
+                _inactivityMonitorStarted = true;
+            }
         }
 
         private static Guid? GetUserId(string? accessToken)
@@ -261,7 +324,7 @@ namespace HouseLedger.Client.Auth
 
                 if (!await IsCurrentTabOwnerAsync())
                 {
-                    await ClearAuthenticationAsync();
+                    await ClearAuthenticationAsync("This session is active in another tab. Please sign in again.");
                     return new ServiceResponse<TokenResponse>
                     {
                         Data = null,
@@ -290,7 +353,7 @@ namespace HouseLedger.Client.Auth
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    await ClearAuthenticationAsync();
+                    await ClearAuthenticationAsync("Your session expired or was revoked. Please sign in again.");
                     var message = await response.Content.ReadAsStringAsync();
                     return new ServiceResponse<TokenResponse>
                     {
@@ -302,7 +365,7 @@ namespace HouseLedger.Client.Auth
 
                 if (!await IsCurrentTabOwnerAsync())
                 {
-                    await ClearAuthenticationAsync();
+                    await ClearAuthenticationAsync("This session is active in another tab. Please sign in again.");
                     return new ServiceResponse<TokenResponse>
                     {
                         Data = null,
@@ -316,10 +379,11 @@ namespace HouseLedger.Client.Auth
                 if (token is not null)
                 {
                     await StoreTokenAsync(token);
+                    await UpdateInactivityMonitorAsync();
                 }
                 else
                 {
-                    await ClearAuthenticationAsync();
+                    await ClearAuthenticationAsync("Your session expired or could not be renewed. Please sign in again.");
                 }
                 AuthenticationStateChanged?.Invoke();
                 return new ServiceResponse<TokenResponse>

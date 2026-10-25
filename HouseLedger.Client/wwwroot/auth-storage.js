@@ -2,6 +2,26 @@ window.houseLedgerAuthStorage = (() => {
     const tabIdKey = "houseLedger.tabId";
     const subscriptions = new Map();
     let nextSubscriptionId = 0;
+    let inactivityTimer;
+    let inactivityCallback;
+    let inactivityTimeoutMilliseconds;
+    const activityEvents = ["pointerdown", "pointermove", "keydown", "scroll", "touchstart"];
+
+    const stopInactivityMonitor = () => {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = undefined;
+        activityEvents.forEach(eventName => window.removeEventListener(eventName, resetInactivityTimer));
+        inactivityCallback = undefined;
+    };
+
+    const resetInactivityTimer = () => {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = window.setTimeout(() => {
+            const callback = inactivityCallback;
+            stopInactivityMonitor();
+            callback?.invokeMethodAsync("OnInactivityTimeoutAsync").catch(() => {});
+        }, inactivityTimeoutMilliseconds);
+    };
 
     return {
         getTabId() {
@@ -42,6 +62,16 @@ window.houseLedgerAuthStorage = (() => {
                 window.removeEventListener("storage", listener);
                 subscriptions.delete(subscriptionId);
             }
+        },
+        startInactivityMonitor(timeoutMilliseconds, dotNetReference) {
+            stopInactivityMonitor();
+            inactivityTimeoutMilliseconds = Math.max(0, timeoutMilliseconds);
+            inactivityCallback = dotNetReference;
+            activityEvents.forEach(eventName => window.addEventListener(eventName, resetInactivityTimer, { passive: true }));
+            resetInactivityTimer();
+        },
+        stopInactivityMonitor() {
+            stopInactivityMonitor();
         }
     };
 })();
