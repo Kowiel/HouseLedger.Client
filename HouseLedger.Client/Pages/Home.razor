@@ -1,17 +1,24 @@
 ﻿@page "/"
-@attribute [Authorize]
+
 
 <PageTitle>Home</PageTitle>
 
-<div class="home-page">
-    <WelcomeBaner />
+<AuthorizeView>
+    <Authorized>
+        <div class="home-page">
+            <WelcomeBaner />
 
-    <div class="home-dashboard-grid">
-        <TheToolList />
+            <div class="home-dashboard-grid">
+                <TheToolList />
 
-        <div class="home-side-column">
-            <Statistic />
-            <LateLenders />
+                <div class="home-side-column">
+                    <Statistic />
+                    <LateLenders />
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>

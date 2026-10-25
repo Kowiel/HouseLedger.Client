@@ -5,6 +5,7 @@ using ClientUserService = HouseLedger.Client.UserService.UserService;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.JSInterop;
 
 namespace HouseLedger.Client
 {
@@ -22,10 +23,10 @@ namespace HouseLedger.Client
 
             builder.Services.AddMudServices();
             builder.Services.AddAuthorizationCore();
-            builder.Services.AddScoped<IAuthService>(_ => new AuthService(new HttpClient
+            builder.Services.AddScoped<IAuthService>(serviceProvider => new AuthService(new HttpClient
             {
                 BaseAddress = apiBaseUrl
-            }));
+            }, serviceProvider.GetRequiredService<IJSRuntime>()));
             builder.Services.AddScoped<AuthMessageHandler>();
             builder.Services.AddScoped(sp =>
             {

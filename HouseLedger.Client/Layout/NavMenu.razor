@@ -100,7 +100,6 @@
     private async Task LogoutAsync()
     {
         await AuthService.LogoutAsync();
-        AuthService.ClearAuthentication();
         Navigation.NavigateTo("/login", forceLoad: true);
     }
 }

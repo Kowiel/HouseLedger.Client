@@ -22,6 +22,8 @@ namespace HouseLedger.Client.Auth
                 return await base.SendAsync(request, cancellationToken);
             }
 
+            await _authService.InitializeAsync();
+
             if (_authService.CurrentToken is null)
             {
                 return await base.SendAsync(request, cancellationToken);
@@ -30,7 +32,7 @@ namespace HouseLedger.Client.Auth
             var refreshResult = await _authService.RefreshAsync();
             if (!refreshResult.Success && _authService.CurrentToken is null)
             {
-                ClearAndRedirect();
+                await ClearAndRedirectAsync();
                 return new HttpResponseMessage(HttpStatusCode.Unauthorized)
                 {
                     RequestMessage = request
@@ -52,7 +54,7 @@ namespace HouseLedger.Client.Auth
             if (!retryRefreshResult.Success || _authService.CurrentToken is null)
             {
                 retryRequest.Dispose();
-                ClearAndRedirect();
+                await ClearAndRedirectAsync();
                 return new HttpResponseMessage(HttpStatusCode.Unauthorized)
                 {
                     RequestMessage = request
@@ -70,9 +72,9 @@ namespace HouseLedger.Client.Auth
                 : null;
         }
 
-        private void ClearAndRedirect()
+        private async Task ClearAndRedirectAsync()
         {
-            _authService.ClearAuthentication();
+            await _authService.ClearAuthenticationAsync();
             _navigation.NavigateTo("/login");
         }
 

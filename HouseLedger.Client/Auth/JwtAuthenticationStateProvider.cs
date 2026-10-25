@@ -14,16 +14,17 @@ public sealed class JwtAuthenticationStateProvider : AuthenticationStateProvider
         _authService.AuthenticationStateChanged += OnAuthenticationStateChanged;
     }
 
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        await _authService.InitializeAsync();
         var token = _authService.CurrentToken?.AccessToken;
         if (string.IsNullOrWhiteSpace(token) || !TryReadClaims(token, out var claims))
         {
-            return Task.FromResult(AnonymousState());
+            return AnonymousState();
         }
 
         var identity = new ClaimsIdentity(claims, "Bearer", ClaimTypes.Name, ClaimTypes.Role);
-        return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity)));
+        return new AuthenticationState(new ClaimsPrincipal(identity));
     }
 
     private void OnAuthenticationStateChanged()

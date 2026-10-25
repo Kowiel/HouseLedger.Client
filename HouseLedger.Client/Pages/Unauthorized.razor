@@ -1,0 +1,26 @@
+@page "/unauthorized"
+@layout MainLayout
+
+<PageTitle>Unauthorized</PageTitle>
+
+<div class="unauthorized-page">
+    <div class="unauthorized-card">
+        <div class="unauthorized-icon">
+            <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Large" />
+        </div>
+        <MudText Typo="Typo.overline" Class="unauthorized-label">ACCESS DENIED</MudText>
+        <MudText Typo="Typo.h2" Class="unauthorized-title">You are not authorized</MudText>
+        <MudText Typo="Typo.body1" Class="unauthorized-message">
+            You do not have permission to view this page.
+        </MudText>
+
+        <MudStack Row="true" Spacing="2" Justify="Justify.Center" Class="unauthorized-actions">
+            <MudButton Href="/login" Variant="Variant.Filled" Color="Color.Primary">
+                Sign in
+            </MudButton>
+            <MudButton Href="/register" Variant="Variant.Outlined" Color="Color.Primary">
+                Create an account
+            </MudButton>
+        </MudStack>
+    </div>
+</div>
