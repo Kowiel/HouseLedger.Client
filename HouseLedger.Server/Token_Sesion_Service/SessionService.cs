@@ -3,17 +3,22 @@ using HouseLedger.Shared.DTO.User;
 using HouseLedger.Shared.Models;
 using HouseLedger.Shared.Response;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 
 namespace HouseLedger.Server.Token_Sesion_Service
 {
     public class SessionService : ISessionService
     {
-        private static readonly TimeSpan InactivityTimeout = TimeSpan.FromMinutes(10);
         private readonly SessionDbContext _sessionDb;
-        public SessionService(SessionDbContext sessionDb)
+        private readonly TimeSpan _inactivityTimeout;
+        private readonly TimeSpan _absoluteSessionLifetime;
+
+        public SessionService(SessionDbContext sessionDb, IOptions<SessionTimeoutOptions> timeoutOptions)
         {
             _sessionDb = sessionDb;
+            _inactivityTimeout = TimeSpan.FromMinutes(timeoutOptions.Value.InactivityTimeoutMinutes);
+            _absoluteSessionLifetime = TimeSpan.FromHours(timeoutOptions.Value.AbsoluteLifetimeHours);
         }
         public async Task<ServiceResponse<bool>> BlockSession(Guid sessionId, string refreshToken)
         {
@@ -49,7 +54,7 @@ namespace HouseLedger.Server.Token_Sesion_Service
         public async Task<bool> ValidateAccessTokenSession(Guid sessionId)
         {
             var now = DateTime.UtcNow;
-            var inactivityCutoff = now.Subtract(InactivityTimeout);
+            var inactivityCutoff = now.Subtract(_inactivityTimeout);
 
             var updated = await _sessionDb.UserSessions
                 .Where(session =>
@@ -90,7 +95,7 @@ namespace HouseLedger.Server.Token_Sesion_Service
                     session.Id == sessionId &&
                     !session.IsRevoked &&
                     session.ExpiresAtUtc > now &&
-                    session.LastActivityAtUtc > now.Subtract(InactivityTimeout) &&
+                    session.LastActivityAtUtc > now.Subtract(_inactivityTimeout) &&
                     session.RefreshTokenHash == oldRefreshTokenHash)
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(session => session.RefreshTokenHash, newRefreshTokenHash)
@@ -146,7 +151,7 @@ namespace HouseLedger.Server.Token_Sesion_Service
                 RefreshTokenHash = HashToken(refreshToken),
                 CreatedAtUtc = now,
                 LastActivityAtUtc = now,
-                ExpiresAtUtc = now.AddMinutes(30),
+                ExpiresAtUtc = now.Add(_absoluteSessionLifetime),
                 IsRevoked = false
             };
 
@@ -177,7 +182,7 @@ namespace HouseLedger.Server.Token_Sesion_Service
             }
 
             var now = DateTime.UtcNow;
-            if (session.IsRevoked || session.ExpiresAtUtc <= now || session.LastActivityAtUtc <= now.Subtract(InactivityTimeout))
+            if (session.IsRevoked || session.ExpiresAtUtc <= now || session.LastActivityAtUtc <= now.Subtract(_inactivityTimeout))
             {
                 return Failure("The session is revoked or expired.");
             }

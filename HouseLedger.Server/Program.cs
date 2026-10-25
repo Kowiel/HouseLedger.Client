@@ -4,6 +4,7 @@ using HouseLedger.Server.Token_Sesion_Service;
 using HouseLedger.Server.ToolServices;
 using HouseLedger.Server.UserService;
 using HouseLedger.Shared.Models;
+using HouseLedger.Shared.Response;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -71,6 +72,12 @@ namespace HouseLedger.Server
             builder.Services
                 .AddOptions<JwtOptions>()
                 .Bind(builder.Configuration.GetRequiredSection("Jwt"))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            builder.Services
+                .AddOptions<SessionTimeoutOptions>()
+                .Bind(builder.Configuration.GetRequiredSection(SessionTimeoutOptions.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 
