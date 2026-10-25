@@ -15,9 +15,7 @@ namespace HouseLedger.Client.Auth
             _navigation = navigation;
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken cancellationToken)
         {
             if (IsAuthRequest(request))
             {

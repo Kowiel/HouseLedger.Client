@@ -27,9 +27,15 @@ namespace HouseLedger.Client
                 BaseAddress = apiBaseUrl
             }));
             builder.Services.AddScoped<AuthMessageHandler>();
-            builder.Services.AddScoped(sp => new HttpClient(sp.GetRequiredService<AuthMessageHandler>())
+            builder.Services.AddScoped(sp =>
             {
-                BaseAddress = apiBaseUrl
+                var authHandler = sp.GetRequiredService<AuthMessageHandler>();
+                authHandler.InnerHandler = new HttpClientHandler();
+
+                return new HttpClient(authHandler)
+                {
+                    BaseAddress = apiBaseUrl
+                };
             });
             builder.Services.AddScoped<IUserService, ClientUserService>();
             builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
