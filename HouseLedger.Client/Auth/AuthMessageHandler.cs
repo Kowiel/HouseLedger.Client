@@ -46,6 +46,7 @@ namespace HouseLedger.Client.Auth
             if (response.StatusCode != HttpStatusCode.Unauthorized)
             {
                 retryRequest.Dispose();
+                RedirectForbiddenResponse(response);
                 return response;
             }
 
@@ -62,7 +63,20 @@ namespace HouseLedger.Client.Auth
             }
 
             AddAccessToken(retryRequest);
-            return await base.SendAsync(retryRequest, cancellationToken);
+            var retryResponse = await base.SendAsync(retryRequest, cancellationToken);
+            if (retryResponse.StatusCode != HttpStatusCode.Unauthorized)
+            {
+                RedirectForbiddenResponse(retryResponse);
+                return retryResponse;
+            }
+
+            retryResponse.Dispose();
+            retryRequest.Dispose();
+            await ClearAndRedirectAsync();
+            return new HttpResponseMessage(HttpStatusCode.Unauthorized)
+            {
+                RequestMessage = request
+            };
         }
 
         private void AddAccessToken(HttpRequestMessage request)
@@ -75,7 +89,15 @@ namespace HouseLedger.Client.Auth
         private async Task ClearAndRedirectAsync()
         {
             await _authService.ClearAuthenticationAsync("Your session ended or is no longer valid. Please sign in again.");
-            _navigation.NavigateTo("/login");
+            _navigation.NavigateTo("/login", replace: true);
+        }
+
+        private void RedirectForbiddenResponse(HttpResponseMessage response)
+        {
+            if (response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                _navigation.NavigateTo("/unauthorized", replace: true);
+            }
         }
 
         private static bool IsAuthRequest(HttpRequestMessage request)

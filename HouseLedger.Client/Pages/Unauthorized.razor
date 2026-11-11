@@ -1,5 +1,6 @@
 @page "/unauthorized"
 @layout MainLayout
+@attribute [Authorize]
 
 <PageTitle>Unauthorized</PageTitle>
 
@@ -15,11 +16,8 @@
         </MudText>
 
         <MudStack Row="true" Spacing="2" Justify="Justify.Center" Class="unauthorized-actions">
-            <MudButton Href="/login" Variant="Variant.Filled" Color="Color.Primary">
-                Sign in
-            </MudButton>
-            <MudButton Href="/register" Variant="Variant.Outlined" Color="Color.Primary">
-                Create an account
+            <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary">
+                Back home
             </MudButton>
         </MudStack>
     </div>
