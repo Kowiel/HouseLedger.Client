@@ -52,8 +52,7 @@
     box-shadow: 0 0.9rem 2rem rgba(28, 38, 76, 0.2);
 }
 
-::deep .welcome-content,
-::deep .welcome-clock {
+::deep .welcome-content {
     display: flex;
     align-items: center;
 }
@@ -87,25 +86,6 @@
 ::deep .welcome-subtitle {
     color: rgba(255, 255, 255, 0.76);
     margin-top: 0.25rem;
-}
-
-::deep .welcome-clock {
-    gap: 0.65rem;
-    padding: 0.65rem 0.85rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 0.85rem;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-::deep .welcome-clock > .mud-icon-root {
-    font-size: 1.8rem;
-}
-
-::deep .welcome-clock .mud-typography-caption {
-    display: block;
-    color: rgba(255, 255, 255, 0.65);
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
 }
 
 .home-dashboard-grid {
@@ -318,10 +298,6 @@
         align-items: flex-start;
         flex-direction: column;
         padding: 1.25rem;
-    }
-
-    ::deep .welcome-clock {
-        align-self: stretch;
     }
 
     .home-side-column {

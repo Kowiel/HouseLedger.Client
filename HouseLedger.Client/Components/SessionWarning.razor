@@ -1,0 +1,46 @@
+@implements IDisposable
+@using HouseLedger.Client.Auth
+@inject IAuthService AuthService
+
+@if (isSessionExpiring)
+{
+    <div class="session-warning-backdrop">
+        <section class="session-warning-dialog" role="alertdialog" aria-modal="true" aria-labelledby="session-warning-title">
+            <h2 id="session-warning-title">Are you still active?</h2>
+            <p>Your session will expire in 2 minutes due to inactivity.</p>
+            <button type="button" class="session-warning-confirm" @onclick="ConfirmSessionActivityAsync">Stay signed in</button>
+        </section>
+    </div>
+}
+
+@code {
+    private bool isSessionExpiring;
+
+    protected override void OnInitialized()
+    {
+        AuthService.SessionExpiring += OnSessionExpiring;
+    }
+
+    private void OnSessionExpiring()
+    {
+        _ = InvokeAsync(() =>
+        {
+            isSessionExpiring = true;
+            StateHasChanged();
+        });
+    }
+
+    private async Task ConfirmSessionActivityAsync()
+    {
+        var response = await AuthService.ConfirmSessionActivityAsync();
+        if (response.Success)
+        {
+            isSessionExpiring = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        AuthService.SessionExpiring -= OnSessionExpiring;
+    }
+}

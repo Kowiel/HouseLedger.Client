@@ -65,11 +65,24 @@ namespace HouseLedger.Server.Token_Sesion_Service
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(session => session.LastActivityAtUtc, now));
 
-            return updated == 1;
+            if (updated == 1)
+            {
+                return true;
+            }
+
+            await _sessionDb.UserSessions
+                .Where(session =>
+                    session.Id == sessionId &&
+                    !session.IsRevoked &&
+                    (session.ExpiresAtUtc <= now || session.LastActivityAtUtc <= inactivityCutoff))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(session => session.IsRevoked, true));
+
+            return false;
         }
 
         // Will require refactoring to use a stored procedure for the rotation to avoid race conditions. For now, this is a simple implementation.
-        public async Task<ServiceResponse<UserSession>> RotateRefreshToken(Guid sessionId, string refreshToken)
+        public async Task<ServiceResponse<UserSession>> RotateRefreshToken(Guid sessionId, string refreshToken, bool isActivityConfirmation = false)
         {
             if (sessionId == Guid.Empty || string.IsNullOrWhiteSpace(refreshToken))
             {
@@ -95,7 +108,7 @@ namespace HouseLedger.Server.Token_Sesion_Service
                     session.Id == sessionId &&
                     !session.IsRevoked &&
                     session.ExpiresAtUtc > now &&
-                    session.LastActivityAtUtc > now.Subtract(_inactivityTimeout) &&
+                    (isActivityConfirmation || session.LastActivityAtUtc > now.Subtract(_inactivityTimeout)) &&
                     session.RefreshTokenHash == oldRefreshTokenHash)
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(session => session.RefreshTokenHash, newRefreshTokenHash)
@@ -103,6 +116,14 @@ namespace HouseLedger.Server.Token_Sesion_Service
 
             if (updated != 1)
             {
+                await _sessionDb.UserSessions
+                    .Where(session =>
+                        session.Id == sessionId &&
+                        !session.IsRevoked &&
+                        (session.ExpiresAtUtc <= now || (!isActivityConfirmation && session.LastActivityAtUtc <= now.Subtract(_inactivityTimeout))))
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(session => session.IsRevoked, true));
+
                 return RotationFailure("The session is invalid, expired, revoked, or the refresh token has already been used.");
             }
 

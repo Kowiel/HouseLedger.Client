@@ -14,6 +14,7 @@ namespace HouseLedger.Client.Auth
         private readonly IJSRuntime _jsRuntime;
         private readonly NavigationManager _navigation;
         private readonly TimeSpan _inactivityTimeout;
+        private readonly TimeSpan _warningBeforeLogout;
         private readonly SemaphoreSlim _refreshLock = new(1, 1);
         private readonly SemaphoreSlim _initializationLock = new(1, 1);
         private TokenResponse? _currentToken;
@@ -38,13 +39,15 @@ namespace HouseLedger.Client.Auth
         }
 
         public event Action? AuthenticationStateChanged;
+        public event Action? SessionExpiring;
 
-        public AuthService(HttpClient httpClient, IJSRuntime jsRuntime, NavigationManager navigation, TimeSpan inactivityTimeout)
+        public AuthService(HttpClient httpClient, IJSRuntime jsRuntime, NavigationManager navigation, TimeSpan inactivityTimeout, TimeSpan warningBeforeLogout)
         {
             _httpClient = httpClient;
             _jsRuntime = jsRuntime;
             _navigation = navigation;
             _inactivityTimeout = inactivityTimeout;
+            _warningBeforeLogout = warningBeforeLogout;
         }
 
         public async Task InitializeAsync()
@@ -214,8 +217,24 @@ namespace HouseLedger.Client.Auth
                 return;
             }
 
-            await ClearAuthenticationAsync("You were logged out due to inactivity. Please sign in again.");
-            _navigation.NavigateTo("/login");
+            const string message = "You were logged out due to inactivity. Please sign in again.";
+            _forcedLogoutMessage ??= message;
+            try
+            {
+                await LogoutAsync();
+            }
+            finally
+            {
+                await ClearAuthenticationAsync();
+                _navigation.NavigateTo("/login");
+            }
+        }
+
+        [JSInvokable]
+        public Task OnSessionExpiringAsync()
+        {
+            SessionExpiring?.Invoke();
+            return Task.CompletedTask;
         }
 
         private async Task UpdateInactivityMonitorAsync()
@@ -236,6 +255,7 @@ namespace HouseLedger.Client.Auth
                 await _jsRuntime.InvokeVoidAsync(
                     "houseLedgerAuthStorage.startInactivityMonitor",
                     _inactivityTimeout.TotalMilliseconds,
+                    _warningBeforeLogout.TotalMilliseconds,
                     _storageCallbackReference);
                 _inactivityMonitorStarted = true;
             }
@@ -306,7 +326,12 @@ namespace HouseLedger.Client.Auth
             }
         }
 
-        public async Task<ServiceResponse<TokenResponse>> RefreshAsync(bool force = false)
+        public Task<ServiceResponse<TokenResponse>> RefreshAsync(bool force = false)
+        {
+            return RefreshAsync(force, isActivityConfirmation: false);
+        }
+
+        private async Task<ServiceResponse<TokenResponse>> RefreshAsync(bool force, bool isActivityConfirmation)
         {
             await InitializeAsync();
             await _refreshLock.WaitAsync();
@@ -348,7 +373,8 @@ namespace HouseLedger.Client.Auth
                 using var response = await _httpClient.PostAsJsonAsync("api/v1/auth/refresh", new RefreshTokenRequest
                 {
                     SessionId = tokenToRefresh.SessionId,
-                    RefreshToken = tokenToRefresh.RefreshToken
+                    RefreshToken = tokenToRefresh.RefreshToken,
+                    IsActivityConfirmation = isActivityConfirmation
                 });
 
                 if (!response.IsSuccessStatusCode)
@@ -397,6 +423,17 @@ namespace HouseLedger.Client.Auth
             {
                 _refreshLock.Release();
             }
+        }
+
+        public async Task<ServiceResponse<TokenResponse>> ConfirmSessionActivityAsync()
+        {
+            var response = await RefreshAsync(force: true, isActivityConfirmation: true);
+            if (response.Success)
+            {
+                await _jsRuntime.InvokeVoidAsync("houseLedgerAuthStorage.confirmActivity");
+            }
+
+            return response;
         }
 
         public async Task<ServiceResponse<bool>> LogoutAsync()

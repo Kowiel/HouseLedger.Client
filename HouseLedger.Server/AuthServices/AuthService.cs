@@ -64,7 +64,10 @@ namespace HouseLedger.Server.AuthServices
 
         public async Task<ServiceResponse<TokenResponse>> Refresh(RefreshTokenRequest request)
         {
-            var sessionResponse = await _sessionService.RotateRefreshToken(request.SessionId, request.RefreshToken);
+            var sessionResponse = await _sessionService.RotateRefreshToken(
+                request.SessionId,
+                request.RefreshToken,
+                request.IsActivityConfirmation);
             if (!sessionResponse.Success || sessionResponse.Data is null)
             {
                 return new ServiceResponse<TokenResponse>

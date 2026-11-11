@@ -25,12 +25,14 @@ namespace HouseLedger.Client
             builder.Services.AddMudServices();
             builder.Services.AddAuthorizationCore();
             var inactivityTimeoutMinutes = builder.Configuration.GetValue("Session:InactivityTimeoutMinutes", 10d);
+            var warningBeforeLogoutMinutes = builder.Configuration.GetValue("Session:WarningBeforeLogoutMinutes", 2d);
             builder.Services.AddScoped<IAuthService>(serviceProvider => new AuthService(new HttpClient
             {
                 BaseAddress = apiBaseUrl
             }, serviceProvider.GetRequiredService<IJSRuntime>(),
                 serviceProvider.GetRequiredService<NavigationManager>(),
-                TimeSpan.FromMinutes(inactivityTimeoutMinutes)));
+                TimeSpan.FromMinutes(inactivityTimeoutMinutes),
+                TimeSpan.FromMinutes(warningBeforeLogoutMinutes)));
             builder.Services.AddScoped<AuthMessageHandler>();
             builder.Services.AddScoped(sp =>
             {

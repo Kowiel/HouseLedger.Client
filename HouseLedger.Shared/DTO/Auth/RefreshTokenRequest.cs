@@ -9,5 +9,7 @@ namespace HouseLedger.Shared.DTO.Auth
 
         [Required]
         public string RefreshToken { get; set; } = string.Empty;
+
+        public bool IsActivityConfirmation { get; set; }
     }
 }
