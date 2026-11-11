@@ -11,6 +11,5 @@ namespace HouseLedger.Server.UserService
         Task<ServiceResponse<bool>> DeleteUser(Guid userId);
         Task<ServiceResponse<BasicUserInfo?>> GetUserById(Guid userId);
         Task<ServiceResponse<FullUserInfo?>> GetFullUserById(Guid userId);
-
     }
 }

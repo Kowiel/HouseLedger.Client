@@ -1,0 +1,134 @@
+using System.Net;
+using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Components;
+
+namespace HouseLedger.Client.Auth
+{
+    public class AuthMessageHandler : DelegatingHandler
+    {
+        private readonly IAuthService _authService;
+        private readonly NavigationManager _navigation;
+
+        public AuthMessageHandler(IAuthService authService, NavigationManager navigation)
+        {
+            _authService = authService;
+            _navigation = navigation;
+        }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken cancellationToken)
+        {
+            if (IsAuthRequest(request))
+            {
+                return await base.SendAsync(request, cancellationToken);
+            }
+
+            await _authService.InitializeAsync();
+
+            if (_authService.CurrentToken is null)
+            {
+                return await base.SendAsync(request, cancellationToken);
+            }
+
+            var refreshResult = await _authService.RefreshAsync();
+            if (!refreshResult.Success && _authService.CurrentToken is null)
+            {
+                await ClearAndRedirectAsync();
+                return new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                {
+                    RequestMessage = request
+                };
+            }
+
+            AddAccessToken(request);
+            var retryRequest = await CloneRequestAsync(request);
+            var response = await base.SendAsync(request, cancellationToken);
+
+            if (response.StatusCode != HttpStatusCode.Unauthorized)
+            {
+                retryRequest.Dispose();
+                RedirectForbiddenResponse(response);
+                return response;
+            }
+
+            response.Dispose();
+            var retryRefreshResult = await _authService.RefreshAsync(force: true);
+            if (!retryRefreshResult.Success || _authService.CurrentToken is null)
+            {
+                retryRequest.Dispose();
+                await ClearAndRedirectAsync();
+                return new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                {
+                    RequestMessage = request
+                };
+            }
+
+            AddAccessToken(retryRequest);
+            var retryResponse = await base.SendAsync(retryRequest, cancellationToken);
+            if (retryResponse.StatusCode != HttpStatusCode.Unauthorized)
+            {
+                RedirectForbiddenResponse(retryResponse);
+                return retryResponse;
+            }
+
+            retryResponse.Dispose();
+            retryRequest.Dispose();
+            await ClearAndRedirectAsync();
+            return new HttpResponseMessage(HttpStatusCode.Unauthorized)
+            {
+                RequestMessage = request
+            };
+        }
+
+        private void AddAccessToken(HttpRequestMessage request)
+        {
+            request.Headers.Authorization = _authService.CurrentToken is { } token
+                ? new AuthenticationHeaderValue("Bearer", token.AccessToken)
+                : null;
+        }
+
+        private async Task ClearAndRedirectAsync()
+        {
+            await _authService.ClearAuthenticationAsync("Your session ended or is no longer valid. Please sign in again.");
+            _navigation.NavigateTo("/login", replace: true);
+        }
+
+        private void RedirectForbiddenResponse(HttpResponseMessage response)
+        {
+            if (response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                _navigation.NavigateTo("/unauthorized", replace: true);
+            }
+        }
+
+        private static bool IsAuthRequest(HttpRequestMessage request)
+        {
+            return request.RequestUri?.AbsolutePath.Contains("/api/v1/auth/", StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        private static async Task<HttpRequestMessage> CloneRequestAsync(HttpRequestMessage request)
+        {
+            var clone = new HttpRequestMessage(request.Method, request.RequestUri)
+            {
+                Version = request.Version,
+                VersionPolicy = request.VersionPolicy
+            };
+
+            foreach (var header in request.Headers)
+            {
+                clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+
+            if (request.Content is not null)
+            {
+                var content = await request.Content.ReadAsByteArrayAsync();
+                clone.Content = new ByteArrayContent(content);
+                foreach (var header in request.Content.Headers)
+                {
+                    clone.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+            }
+
+            return clone;
+        }
+    }
+}

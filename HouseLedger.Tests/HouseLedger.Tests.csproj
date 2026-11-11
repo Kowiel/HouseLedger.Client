@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\HouseLedger.Client\HouseLedger.Client.csproj" />
     <ProjectReference Include="..\HouseLedger.Server\HouseLedger.Server.csproj" />
     <ProjectReference Include="..\HouseLedger.Shared\HouseLedger.Shared.csproj" />
   </ItemGroup>

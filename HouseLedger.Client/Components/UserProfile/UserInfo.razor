@@ -1,4 +1,11 @@
 ﻿@using System.ComponentModel.DataAnnotations
+@using HouseLedger.Client.Auth
+@using HouseLedger.Client.UserService
+@using HouseLedger.Shared.DTO.User
+@inject IAuthService AuthService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <MudCard Class="profile-card user-info-card" Elevation="6">
     <MudCardContent Class="profile-card-content">
@@ -10,7 +17,13 @@
             </div>
         </div>
 
-        <EditForm Model="@model" OnValidSubmit="SaveChanges">
+        @if (isLoading)
+        {
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+        }
+        else
+        {
+            <EditForm Model="@model" OnValidSubmit="SaveChanges">
             <DataAnnotationsValidator />
             <div class="profile-form-grid">
                 <MudTextField Label="First name" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Badge"
@@ -18,7 +31,9 @@
                 <MudTextField Label="Last name" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Badge"
                               @bind-Value="model.LastName" For="@(() => model.LastName)" />
                 <MudTextField Label="Username" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AccountCircle"
-                              @bind-Value="model.UserName" For="@(() => model.UserName)" />
+                              @bind-Value="model.UserName" For="@(() => model.UserName)" Disabled="true" />
+                <MudTextField Label="Display name" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Badge"
+                              @bind-Value="model.DisplayName" For="@(() => model.DisplayName)" />
                 <MudTextField Label="Phone number" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Phone"
                               @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" InputType="InputType.Telephone" />
                 <MudTextField Label="Email address" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email"
@@ -32,17 +47,56 @@
                 }
                 <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="profile-button">Save changes</MudButton>
             </div>
-        </EditForm>
+            </EditForm>
+        }
     </MudCardContent>
 </MudCard>
 
 @code {
     private UserInfoForm model = new();
     private bool saved;
+    private bool isLoading = true;
 
-    private void SaveChanges(EditContext context)
+    protected override async Task OnInitializedAsync()
     {
+        var userId = AuthService.CurrentUserId;
+        if (userId is null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        var result = await UserService.GetFullAsync();
+        if (!result.Success || result.Data is null)
+        {
+            Snackbar.Add(result.Message ?? "User information could not be loaded.", Severity.Error);
+            isLoading = false;
+            return;
+        }
+
+        model = UserInfoForm.FromUser(result.Data);
+        isLoading = false;
+    }
+
+    private async Task SaveChanges(EditContext context)
+    {
+        saved = false;
+        var userId = AuthService.CurrentUserId;
+        if (userId is null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        var result = await UserService.UpdateAsync(model.ToRequest());
+        if (!result.Success)
+        {
+            Snackbar.Add(result.Message ?? "Changes could not be saved.", Severity.Error);
+            return;
+        }
+
         saved = true;
+        Snackbar.Add("Profile updated successfully.", Severity.Success);
     }
 
     private sealed class UserInfoForm
@@ -56,10 +110,32 @@
         [Required, MinLength(4), MaxLength(100)]
         public string UserName { get; set; } = "TestUser";
 
+        [Required, MinLength(4), MaxLength(100)]
+        public string DisplayName { get; set; } = string.Empty;
+
         [Phone]
         public string? PhoneNumber { get; set; }
 
         [Required, EmailAddress]
         public string Email { get; set; } = string.Empty;
+
+        public UpdateUserRequest ToRequest() => new()
+        {
+            DisplayName = DisplayName,
+            Email = Email,
+            PhoneNumber = PhoneNumber,
+            FirstName = FirstName,
+            LastName = LastName
+        };
+
+        public static UserInfoForm FromUser(FullUserInfo user) => new()
+        {
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            UserName = user.UserName,
+            DisplayName = user.DisplayName ?? user.UserName,
+            PhoneNumber = user.PhoneNumber,
+            Email = user.Email
+        };
     }
 }

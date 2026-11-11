@@ -1,9 +1,15 @@
 using HouseLedger.Server.Data;
+using HouseLedger.Server.AuthServices;
+using HouseLedger.Server.Token_Sesion_Service;
 using HouseLedger.Server.ToolServices;
 using HouseLedger.Server.UserService;
 using HouseLedger.Shared.Models;
+using HouseLedger.Shared.Response;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace HouseLedger.Server
 {
@@ -20,6 +26,8 @@ namespace HouseLedger.Server
             builder.Configuration.AddInMemoryCollection(ReadEnvFile(envFile));
 
             builder.Services.AddControllers();
+
+            // Configure database connection strings from environment variables
 
             var dbHost = builder.Configuration["POSTGRES:HOST"];
             var dbPort = builder.Configuration["POSTGRES:PORT"];
@@ -52,19 +60,79 @@ namespace HouseLedger.Server
             var sessionConnectionString =
                 $"Host={sessionDbHost};Port={sessionDbPort};Database={sessionDbName};Username={sessionDbUser};Password={sessionDbPassword}";
 
+            // The Database Contexts are registered with the dependency 
             builder.Services.AddDbContext<HouseLedgerDbContext>(options =>
                 options.UseNpgsql(connectionString));
 
             builder.Services.AddDbContext<SessionDbContext>(options =>
                 options.UseNpgsql(sessionConnectionString));
 
+            // Configure JwtOptions from appsettings.json and environment variables
+
+            builder.Services
+                .AddOptions<JwtOptions>()
+                .Bind(builder.Configuration.GetRequiredSection("Jwt"))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            builder.Services
+                .AddOptions<SessionTimeoutOptions>()
+                .Bind(builder.Configuration.GetRequiredSection(SessionTimeoutOptions.SectionName))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            // Configure JWT authentication
+
+            builder.Services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    var jwt = builder.Configuration
+                        .GetRequiredSection("Jwt")
+                        .Get<JwtOptions>()!;
+
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidIssuer = jwt.Issuer,
+                        ValidAudience = jwt.Audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(jwt.SigningKey)),
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
+                    };
+
+                     options.Events = new JwtBearerEvents
+                     {
+                         OnTokenValidated = async context =>
+                         {
+                             var sessionIdValue = context.Principal?.FindFirst("sid")?.Value;
+                             if (!Guid.TryParse(sessionIdValue, out var sessionId))
+                             {
+                                 context.Fail("The access token does not contain a valid session.");
+                                 return;
+                             }
+
+                             var sessionService = context.HttpContext.RequestServices
+                                 .GetRequiredService<ISessionService>();
+                             if (!await sessionService.ValidateAccessTokenSession(sessionId))
+                             {
+                                 context.Fail("The session has expired due to inactivity.");
+                             }
+                         }
+                     };
+                });
+
+
+            //Register services
 
             builder.Services.AddScoped<IToolService, ToolService>();
             builder.Services.AddScoped<IUserCRUDService, UserCRUDService>();
-
-
-
-
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddScoped<ISessionService, SessionService>();
 
 
             builder.Services

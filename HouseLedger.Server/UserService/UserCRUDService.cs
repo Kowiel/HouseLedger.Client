@@ -15,7 +15,10 @@ namespace HouseLedger.Server.UserService
     {
         private readonly HouseLedgerDbContext _dbContext;
         private readonly UserManager<AppUser> _userManager;
-        public UserCRUDService(HouseLedgerDbContext dbContext, UserManager<AppUser> userManager)
+
+        public UserCRUDService(
+            HouseLedgerDbContext dbContext,
+            UserManager<AppUser> userManager)
         {
             _dbContext = dbContext;
             _userManager = userManager;
@@ -67,38 +70,42 @@ namespace HouseLedger.Server.UserService
 
         public async Task<ServiceResponse<FullUserInfo?>> GetFullUserById(Guid userId)
         {
-            var user = await _userManager.FindByIdAsync(userId.ToString());
-
-            var fullUserInfo = user is null ? null : new FullUserInfo
-            {
-                Id= user.Id,
-                UserName = user.UserName,
-                NormalizedUserName = user.NormalizedUserName,
-                Email = user.Email,
-                NormalizedEmail = user.NormalizedEmail,
-                PhoneNumber = user.PhoneNumber,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                DisplayName = user.DisplayName,
-                CreatedDate = user.CreatedDate
-            };
+            var fullUserInfo = await _dbContext.Users
+                .AsNoTracking()
+                .Where(user => user.Id == userId)
+                .Select(user => new FullUserInfo
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    NormalizedUserName = user.NormalizedUserName,
+                    Email = user.Email,
+                    NormalizedEmail = user.NormalizedEmail,
+                    PhoneNumber = user.PhoneNumber,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    DisplayName = user.DisplayName,
+                    CreatedDate = user.CreatedDate
+                })
+                .SingleOrDefaultAsync();
 
             return new ServiceResponse<FullUserInfo?> { Data = fullUserInfo, Success = fullUserInfo != null ? true : false, Message = fullUserInfo != null ? "User found." : "User not found." };
         }
 
         public async Task<ServiceResponse<BasicUserInfo?>> GetUserById(Guid userId)
         {
-            var user = await _userManager.FindByIdAsync(userId.ToString());
-
-            var basicUserInfo = user is null ? null : new BasicUserInfo
-            {
-                UserName = user.UserName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                DisplayName = user.DisplayName
-            };
+            var basicUserInfo = await _dbContext.Users
+                .AsNoTracking()
+                .Where(user => user.Id == userId)
+                .Select(user => new BasicUserInfo
+                {
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    DisplayName = user.DisplayName
+                })
+                .SingleOrDefaultAsync();
 
             return new ServiceResponse<BasicUserInfo?> { Data = basicUserInfo, Success = basicUserInfo != null ? true : false, Message = basicUserInfo != null ? "User found." : "User not found." };
         }
@@ -115,6 +122,7 @@ namespace HouseLedger.Server.UserService
 
             user.DisplayName = request.DisplayName;
             user.Email = request.Email;
+            user.PhoneNumber = request.PhoneNumber;
             user.FirstName = request.FirstName;
             user.LastName = request.LastName;
            
@@ -140,19 +148,12 @@ namespace HouseLedger.Server.UserService
 
         private async Task<bool> IsDistinctUser(string email, string userName)
         {
-            var existingUserByEmail = await _userManager.FindByEmailAsync(email);
-            if (existingUserByEmail != null)
-            {
-                return false;
-            }
+            var normalizedEmail = _userManager.NormalizeEmail(email);
+            var normalizedUserName = _userManager.NormalizeName(userName);
 
-            var existingUserByName = await _userManager.FindByNameAsync(userName);
-            if (existingUserByName != null)
-            {
-                return false;
-            }
-
-            return true;
+            return !await _dbContext.Users
+                .AsNoTracking()
+                .AnyAsync(user => user.NormalizedEmail == normalizedEmail || user.NormalizedUserName == normalizedUserName);
         }
         private async Task<bool> IsDistinctUser(string email)
         {

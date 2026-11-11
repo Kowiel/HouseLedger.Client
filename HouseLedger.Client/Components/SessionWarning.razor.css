@@ -1,0 +1,39 @@
+.session-warning-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.session-warning-dialog {
+    width: min(100%, 28rem);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    background: #fff;
+    color: #252a34;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.3);
+}
+
+.session-warning-dialog h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.35rem;
+}
+
+.session-warning-dialog p {
+    margin: 0 0 1.5rem;
+}
+
+.session-warning-confirm {
+    display: block;
+    margin-left: auto;
+    padding: 0.6rem 1.2rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: #3f51b5;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+}

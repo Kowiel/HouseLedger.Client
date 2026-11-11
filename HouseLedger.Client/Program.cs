@@ -1,6 +1,12 @@
 using MudBlazor.Services;
+using HouseLedger.Client.Auth;
+using HouseLedger.Client.UserService;
+using ClientUserService = HouseLedger.Client.UserService.UserService;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.JSInterop;
 
 namespace HouseLedger.Client
 {
@@ -12,11 +18,34 @@ namespace HouseLedger.Client
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
+            var apiBaseUrl = new Uri(
+                builder.Configuration["ApiBaseUrl"] ?? builder.HostEnvironment.BaseAddress,
+                UriKind.Absolute);
+
             builder.Services.AddMudServices();
-            builder.Services.AddScoped(sp => new HttpClient 
-            { 
-                BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) 
+            builder.Services.AddAuthorizationCore();
+            var inactivityTimeoutMinutes = builder.Configuration.GetValue("Session:InactivityTimeoutMinutes", 10d);
+            var warningBeforeLogoutMinutes = builder.Configuration.GetValue("Session:WarningBeforeLogoutMinutes", 2d);
+            builder.Services.AddScoped<IAuthService>(serviceProvider => new AuthService(new HttpClient
+            {
+                BaseAddress = apiBaseUrl
+            }, serviceProvider.GetRequiredService<IJSRuntime>(),
+                serviceProvider.GetRequiredService<NavigationManager>(),
+                TimeSpan.FromMinutes(inactivityTimeoutMinutes),
+                TimeSpan.FromMinutes(warningBeforeLogoutMinutes)));
+            builder.Services.AddScoped<AuthMessageHandler>();
+            builder.Services.AddScoped(sp =>
+            {
+                var authHandler = sp.GetRequiredService<AuthMessageHandler>();
+                authHandler.InnerHandler = new HttpClientHandler();
+
+                return new HttpClient(authHandler)
+                {
+                    BaseAddress = apiBaseUrl
+                };
             });
+            builder.Services.AddScoped<IUserService, ClientUserService>();
+            builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
 
             await builder.Build().RunAsync();
         }
