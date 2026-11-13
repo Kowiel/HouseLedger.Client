@@ -1,7 +1,6 @@
 using System.Net;
 using HouseLedger.Client.Auth;
 using HouseLedger.Shared.DTO.Auth;
-using HouseLedger.Shared.DTO.User;
 using HouseLedger.Shared.Response;
 using Microsoft.AspNetCore.Components;
 
@@ -122,23 +121,12 @@ public class AuthMessageHandlerTests
             remove { }
         }
 
-        public event Action? SessionExpiring
-        {
-            add { }
-            remove { }
-        }
-
-        public string? ConsumeForcedLogoutMessage() => null;
-
         public Task InitializeAsync() => Task.CompletedTask;
-
-        public Task<ServiceResponse<bool>> RegisterAsync(CreateUserRequest request) =>
-            Task.FromResult(new ServiceResponse<bool>());
 
         public Task<ServiceResponse<TokenResponse>> LoginAsync(LoginRequest request) =>
             Task.FromResult(new ServiceResponse<TokenResponse>());
 
-        public Task<ServiceResponse<TokenResponse>> RefreshAsync(bool force = false)
+        public Task<ServiceResponse<TokenResponse>> RefreshAsync(bool force = false, bool isActivityConfirmation = false)
         {
             var success = !force || !RejectForcedRefresh;
             return Task.FromResult(new ServiceResponse<TokenResponse>
@@ -147,9 +135,6 @@ public class AuthMessageHandlerTests
                 Success = success
             });
         }
-
-        public Task<ServiceResponse<TokenResponse>> ConfirmSessionActivityAsync() =>
-            Task.FromResult(new ServiceResponse<TokenResponse>());
 
         public Task<ServiceResponse<bool>> LogoutAsync() =>
             Task.FromResult(new ServiceResponse<bool>());

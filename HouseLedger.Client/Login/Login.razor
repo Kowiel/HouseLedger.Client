@@ -4,6 +4,7 @@
 @using HouseLedger.Client.Auth
 @using HouseLedger.Shared.DTO.Auth
 @inject IAuthService AuthService
+@inject SessionService SessionService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
@@ -59,7 +60,7 @@
 
     protected override void OnInitialized()
     {
-        forcedLogoutMessage = AuthService.ConsumeForcedLogoutMessage();
+        forcedLogoutMessage = SessionService.ConsumeForcedLogoutMessage();
     }
 
     private void DismissForcedLogoutMessage() => forcedLogoutMessage = null;

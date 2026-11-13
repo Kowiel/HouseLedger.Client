@@ -1,6 +1,6 @@
 @implements IDisposable
 @using HouseLedger.Client.Auth
-@inject IAuthService AuthService
+@inject SessionService SessionService
 
 @if (isSessionExpiring)
 {
@@ -18,7 +18,7 @@
 
     protected override void OnInitialized()
     {
-        AuthService.SessionExpiring += OnSessionExpiring;
+        SessionService.SessionExpiring += OnSessionExpiring;
     }
 
     private void OnSessionExpiring()
@@ -32,7 +32,7 @@
 
     private async Task ConfirmSessionActivityAsync()
     {
-        var response = await AuthService.ConfirmSessionActivityAsync();
+        var response = await SessionService.ConfirmSessionActivityAsync();
         if (response.Success)
         {
             isSessionExpiring = false;
@@ -41,6 +41,6 @@
 
     public void Dispose()
     {
-        AuthService.SessionExpiring -= OnSessionExpiring;
+        SessionService.SessionExpiring -= OnSessionExpiring;
     }
 }

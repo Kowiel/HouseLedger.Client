@@ -3,7 +3,7 @@
 @using System.ComponentModel.DataAnnotations
 @using HouseLedger.Client.Auth
 @using HouseLedger.Shared.DTO.User
-@inject IAuthService AuthService
+@inject RegistrationService RegistrationService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
@@ -73,7 +73,7 @@
         isSubmitting = true;
         try
         {
-            var result = await AuthService.RegisterAsync(model);
+            var result = await RegistrationService.RegisterAsync(model);
             if (!result.Success)
             {
                 Snackbar.Add(result.Message ?? "Registration failed.", Severity.Error);
