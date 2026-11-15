@@ -72,7 +72,7 @@
 
 ::deep .profile-card {
     border-radius: 1.15rem;
-    background: rgba(255, 255, 255, 0.97);
+    background: var(--mud-palette-surface);
     overflow: hidden;
     transition: transform 180ms ease, box-shadow 180ms ease;
 }

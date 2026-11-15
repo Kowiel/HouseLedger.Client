@@ -13,12 +13,15 @@ public class AuthStorageServiceTests
     [InlineData(null)]
     public async Task Initialize_WithLegacyOnlyToken_ClearsItWithoutRestoringAuthentication(string? legacyToken)
     {
+        // Arrange: only legacy storage key is present.
         var js = new FakeJsRuntime { LegacyToken = legacyToken };
         await using var service = new AuthStorageService(js);
 
+        // Act: initialize twice to validate idempotent setup.
         var token = await service.InitializeAsync(_ => Task.CompletedTask);
         var repeatedToken = await service.InitializeAsync(_ => Task.CompletedTask);
 
+        // Assert: no authentication is restored and legacy key is removed once.
         Assert.Null(token);
         Assert.Null(repeatedToken);
         Assert.Null(js.LegacyToken);
@@ -33,13 +36,16 @@ public class AuthStorageServiceTests
     [Fact]
     public async Task Initialize_WithCurrentTabAuthentication_RestoresItAndClearsLegacyToken()
     {
+        // Arrange: current tab owns a valid persisted authentication record.
         var storedToken = CreateToken();
         var storedAuthentication = SerializeAuthentication("test-tab", storedToken);
         var js = new FakeJsRuntime { LegacyToken = "old-token", StoredAuthentication = storedAuthentication };
         await using var service = new AuthStorageService(js);
 
+        // Act: initialize storage service.
         var token = await service.InitializeAsync(_ => Task.CompletedTask);
 
+        // Assert: owned authentication is restored while legacy key is cleared.
         Assert.NotNull(token);
         Assert.Equal(storedToken.AccessToken, token.AccessToken);
         Assert.Equal(storedToken.RefreshToken, token.RefreshToken);
@@ -54,14 +60,17 @@ public class AuthStorageServiceTests
     [Fact]
     public async Task Initialize_WithAnotherTabsAuthentication_PreservesItAndClearsLegacyToken()
     {
+        // Arrange: persisted authentication belongs to another tab.
         var storedAuthentication = SerializeAuthentication("other-tab", CreateToken());
         var js = new FakeJsRuntime { LegacyToken = "old-token", StoredAuthentication = storedAuthentication };
         await using var service = new AuthStorageService(js);
 
+        // Act: initialize and attempt owner-only clear.
         var token = await service.InitializeAsync(_ => Task.CompletedTask);
         var isOwner = await service.IsCurrentTabOwnerAsync();
         await service.ClearOwnedAuthenticationAsync();
 
+        // Assert: token is not restored and another tab's record is untouched.
         Assert.Null(token);
         Assert.False(isOwner);
         Assert.Null(js.LegacyToken);
@@ -72,11 +81,14 @@ public class AuthStorageServiceTests
     [Fact]
     public async Task Initialize_WithMalformedCurrentRecord_RemovesBothRecordsWithoutMigration()
     {
+        // Arrange: malformed current storage payload with a legacy value present.
         var js = new FakeJsRuntime { LegacyToken = "old-token", StoredAuthentication = "not-json" };
         await using var service = new AuthStorageService(js);
 
+        // Act: initialize storage service.
         var token = await service.InitializeAsync(_ => Task.CompletedTask);
 
+        // Assert: both records are cleared without attempting migration.
         Assert.Null(token);
         Assert.Null(js.LegacyToken);
         Assert.Null(js.StoredAuthentication);
@@ -88,6 +100,7 @@ public class AuthStorageServiceTests
     [Fact]
     public async Task StorageChanges_StillNotifyOnlyWithCurrentTabToken()
     {
+        // Arrange: subscribe to storage updates from the current tab instance.
         var js = new FakeJsRuntime { LegacyToken = "old-token" };
         await using var service = new AuthStorageService(js);
         var notifications = new List<TokenResponse?>();
@@ -98,9 +111,11 @@ public class AuthStorageServiceTests
         });
         var currentToken = CreateToken();
 
+        // Act: process another-tab then current-tab storage changes.
         await service.OnAuthStorageChanged(SerializeAuthentication("other-tab", CreateToken()));
         await service.OnAuthStorageChanged(SerializeAuthentication("test-tab", currentToken));
 
+        // Assert: only current-tab token is surfaced as authenticated.
         Assert.Equal(2, notifications.Count);
         Assert.Null(notifications[0]);
         Assert.Equal(currentToken.SessionId, notifications[1]?.SessionId);

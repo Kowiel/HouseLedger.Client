@@ -12,13 +12,16 @@ public class RegistrationServiceTests
     [InlineData(false, "The account could not be created.")]
     public async Task RegisterAsync_ReturnsTheServerResult(bool created, string expectedMessage)
     {
+        // Arrange: registration endpoint returns a successful HTTP response with a boolean payload.
         var handler = new RegistrationHandler(HttpStatusCode.OK, JsonContent.Create(created));
         using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example/") };
         var service = new RegistrationService(client);
         var request = new CreateUserRequest { UserName = "alice", Email = "alice@example.com" };
 
+        // Act: submit registration request.
         var result = await service.RegisterAsync(request);
 
+        // Assert: service maps server payload and uses expected request metadata.
         Assert.Equal(created, result.Success);
         Assert.Equal(created, result.Data);
         Assert.Equal(expectedMessage, result.Message);
@@ -34,15 +37,23 @@ public class RegistrationServiceTests
     [InlineData("", "Registration failed.")]
     public async Task RegisterAsync_ReturnsTheErrorOrFallback(string body, string expectedMessage)
     {
+        // Arrange: registration endpoint returns a bad request with optional message body.
         var handler = new RegistrationHandler(HttpStatusCode.BadRequest, new StringContent(body));
         using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example/") };
         var service = new RegistrationService(client);
+        var request = new CreateUserRequest();
 
-        var result = await service.RegisterAsync(new CreateUserRequest());
+        // Act: submit registration request.
+        var result = await service.RegisterAsync(request);
 
+        // Assert: service propagates explicit error text or fallback message.
         Assert.False(result.Success);
         Assert.False(result.Data);
         Assert.Equal(expectedMessage, result.Message);
+        Assert.Equal(HttpMethod.Post, handler.Method);
+        Assert.Equal("/api/v1/user/crud/createuser", handler.Path);
+        Assert.Null(handler.Authorization);
+        Assert.NotNull(handler.Request);
     }
 
     private sealed class RegistrationHandler(HttpStatusCode status, HttpContent responseContent) : HttpMessageHandler

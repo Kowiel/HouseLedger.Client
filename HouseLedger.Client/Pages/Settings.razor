@@ -1,86 +1,129 @@
 ﻿@page "/settings"
 @attribute [Authorize]
+@using HouseLedger.Client.UserService
+@using HouseLedger.Shared.DTO.User
+@inject IUserService UserService
+@inject DisplaySettingsState DisplaySettingsState
+@inject ISnackbar Snackbar
 
 <PageTitle>Settings</PageTitle>
 
-<div class="settings-page @(darkMode ? "settings-dark" : string.Empty)">
+<div class="settings-page">
     <div class="settings-heading">
         <div class="settings-icon"><MudIcon Icon="@Icons.Material.Filled.Settings" /></div>
         <MudText Typo="Typo.h3" Class="settings-title">Settings</MudText>
-        <MudText Typo="Typo.body1" Class="settings-subtitle">Make HouseLedger work the way you do.</MudText>
+        <MudText Typo="Typo.body1" Class="settings-subtitle">Customize how the app looks for your account.</MudText>
     </div>
 
     <div class="settings-content">
         <MudCard Class="settings-card" Elevation="6">
             <MudCardContent Class="settings-card-content">
                 <div class="settings-section-heading">
-                    <MudIcon Icon="@Icons.Material.Filled.NotificationsNone" />
-                    <div>
-                        <MudText Typo="Typo.h6">Notifications</MudText>
-                        <MudText Typo="Typo.caption">Choose how you want to receive updates.</MudText>
-                    </div>
-                </div>
-
-                <div class="settings-option">
-                    <div class="option-icon sms-icon"><MudIcon Icon="@Icons.Material.Filled.Sms" /></div>
-                    <div class="option-copy">
-                        <MudText Typo="Typo.subtitle1">SMS alerts</MudText>
-                        <MudText Typo="Typo.body2">Get important reminders and payment alerts by text.</MudText>
-                    </div>
-                    <MudSwitch @bind-Value="smsAlerts" Color="Color.Primary" />
-                </div>
-
-                <div class="settings-option">
-                    <div class="option-icon email-icon"><MudIcon Icon="@Icons.Material.Filled.Email" /></div>
-                    <div class="option-copy">
-                        <MudText Typo="Typo.subtitle1">Email alerts</MudText>
-                        <MudText Typo="Typo.body2">Receive updates about your household ledger by email.</MudText>
-                    </div>
-                    <MudSwitch @bind-Value="emailAlerts" Color="Color.Primary" />
-                </div>
-
-                <div class="settings-option">
-                    <div class="option-icon summary-icon"><MudIcon Icon="@Icons.Material.Filled.CalendarMonth" /></div>
-                    <div class="option-copy">
-                        <MudText Typo="Typo.subtitle1">Weekly summary</MudText>
-                        <MudText Typo="Typo.body2">Get a simple overview of your household activity each week.</MudText>
-                    </div>
-                    <MudSwitch @bind-Value="weeklySummary" Color="Color.Primary" />
-                </div>
-            </MudCardContent>
-        </MudCard>
-
-        <MudCard Class="settings-card" Elevation="6">
-            <MudCardContent Class="settings-card-content">
-                <div class="settings-section-heading">
                     <MudIcon Icon="@Icons.Material.Filled.Tune" />
                     <div>
                         <MudText Typo="Typo.h6">Preferences</MudText>
-                        <MudText Typo="Typo.caption">Personalize your HouseLedger experience.</MudText>
+                        <MudText Typo="Typo.caption">Choose your display and notification defaults.</MudText>
                     </div>
                 </div>
 
-                <div class="settings-option">
-                    <div class="option-icon appearance-icon"><MudIcon Icon="@Icons.Material.Filled.DarkMode" /></div>
-                    <div class="option-copy">
-                        <MudText Typo="Typo.subtitle1">Dark mode</MudText>
-                        <MudText Typo="Typo.body2">Use a darker color scheme that is easier on the eyes.</MudText>
-                    </div>
-                    <MudSwitch @bind-Value="darkMode" Color="Color.Primary" />
-                </div>
+                @if (isLoading)
+                {
+                    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                }
+                else
+                {
+                    <EditForm Model="@settings" OnValidSubmit="SaveSettingsAsync">
+                        <DataAnnotationsValidator />
+
+                        <div class="settings-option">
+                            <div class="option-icon appearance-icon"><MudIcon Icon="@Icons.Material.Filled.DarkMode" /></div>
+                            <div class="option-copy">
+                                <MudText Typo="Typo.subtitle1">Dark mode</MudText>
+                                <MudText Typo="Typo.body2">Use a darker color palette across the app.</MudText>
+                            </div>
+                            <MudSwitch @bind-Value="settings.DarkModeEnabled" Color="Color.Primary" />
+                        </div>
+
+                        <div class="settings-option">
+                            <div class="option-icon text-icon"><MudIcon Icon="@Icons.Material.Filled.FormatSize" /></div>
+                            <div class="option-copy">
+                                <MudText Typo="Typo.subtitle1">Text size</MudText>
+                                <MudText Typo="Typo.body2">Pick the reading size that works best for you.</MudText>
+                            </div>
+                            <MudSelect T="string" @bind-Value="settings.TextSize" Dense="true" Class="settings-select">
+                                <MudSelectItem T="string" Value="@("Small")">Small</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("Normal")">Normal</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("Large")">Large</MudSelectItem>
+                            </MudSelect>
+                        </div>
+
+                        <div class="settings-footer">
+                            @if (saved)
+                            {
+                                <MudText Typo="Typo.caption" Class="saved-message"><MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" /> Settings saved</MudText>
+                            }
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">Save settings</MudButton>
+                        </div>
+                    </EditForm>
+                }
             </MudCardContent>
         </MudCard>
 
-        <div class="settings-note">
-            <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" />
-            <MudText Typo="Typo.body2">Your preferences are saved automatically.</MudText>
-        </div>
+        <ResetPassword />
     </div>
 </div>
 
 @code {
-    private bool smsAlerts = true;
-    private bool emailAlerts = true;
-    private bool weeklySummary;
-    private bool darkMode;
+    private UpdateUserSettingsRequest settings = new();
+    private bool emailNotificationsEnabled;
+    private bool weeklySummaryEnabled;
+    private bool isLoading = true;
+    private bool saved;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await UserService.GetSettingsAsync();
+        if (!result.Success || result.Data is null)
+        {
+            Snackbar.Add(result.Message ?? "Settings could not be loaded.", Severity.Error);
+            settings = new UpdateUserSettingsRequest { TextSize = "Normal", EmailNotificationsEnabled = true };
+            isLoading = false;
+            return;
+        }
+
+        settings = new UpdateUserSettingsRequest
+        {
+            DarkModeEnabled = result.Data.DarkModeEnabled,
+            TextSize = result.Data.TextSize,
+            EmailNotificationsEnabled = result.Data.EmailNotificationsEnabled,
+            WeeklySummaryEnabled = result.Data.WeeklySummaryEnabled
+        };
+        emailNotificationsEnabled = result.Data.EmailNotificationsEnabled;
+        weeklySummaryEnabled = result.Data.WeeklySummaryEnabled;
+        DisplaySettingsState.Update(result.Data.DarkModeEnabled, result.Data.TextSize);
+        isLoading = false;
+    }
+
+    private async Task SaveSettingsAsync(EditContext _)
+    {
+        saved = false;
+        var request = new UpdateUserSettingsRequest
+        {
+            DarkModeEnabled = settings.DarkModeEnabled,
+            TextSize = settings.TextSize,
+            EmailNotificationsEnabled = emailNotificationsEnabled,
+            WeeklySummaryEnabled = weeklySummaryEnabled
+        };
+
+        var result = await UserService.UpdateSettingsAsync(request);
+        if (!result.Success)
+        {
+            Snackbar.Add(result.Message ?? "Settings could not be saved.", Severity.Error);
+            return;
+        }
+
+        DisplaySettingsState.Update(settings.DarkModeEnabled, settings.TextSize);
+        saved = true;
+        Snackbar.Add("Settings updated successfully.", Severity.Success);
+    }
 }

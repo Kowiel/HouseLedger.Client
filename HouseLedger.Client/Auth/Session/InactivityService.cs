@@ -2,7 +2,7 @@ using Microsoft.JSInterop;
 
 namespace HouseLedger.Client.Auth;
 
-public sealed class InactivityService : IAsyncDisposable
+public sealed class InactivityService : IInactivityService
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly TimeSpan _inactivityTimeout;
@@ -64,6 +64,7 @@ public sealed class InactivityService : IAsyncDisposable
     {
         if (InactivityTimedOut is { } handlers)
         {
+            // Run each async subscriber sequentially so logout-related side effects stay deterministic.
             foreach (Func<Task> handler in handlers.GetInvocationList())
             {
                 await handler();

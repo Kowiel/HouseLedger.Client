@@ -4,7 +4,7 @@ using Microsoft.JSInterop;
 
 namespace HouseLedger.Client.Auth;
 
-public sealed class AuthStorageService : IAsyncDisposable
+public sealed class AuthStorageService : IAuthStorageService
 {
     private const string LocalStorageKey = "houseLedger.authentication";
     private const string LegacySessionStorageKey = "houseLedger.tokenResponse";
@@ -29,6 +29,7 @@ public sealed class AuthStorageService : IAsyncDisposable
         }
 
         _authenticationChanged = authenticationChanged;
+        // Tab id allows one browser tab to be the owner of the persisted auth payload.
         _tabId = await _jsRuntime.InvokeAsync<string>("houseLedgerAuthStorage.getTabId");
         await _jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", LegacySessionStorageKey);
         _callbackReference = DotNetObjectReference.Create(this);
@@ -89,6 +90,7 @@ public sealed class AuthStorageService : IAsyncDisposable
     [JSInvokable]
     public async Task OnAuthStorageChanged(string? storedAuthentication)
     {
+        // JS notifies all tabs; only the owning tab treats the payload as an active token.
         var session = DeserializeStoredAuthentication(storedAuthentication);
         var token = session is not null && session.TabId == _tabId ? session.Token : null;
         _currentToken = token;

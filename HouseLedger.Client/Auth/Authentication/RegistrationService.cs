@@ -4,7 +4,7 @@ using HouseLedger.Shared.Response;
 
 namespace HouseLedger.Client.Auth;
 
-public sealed class RegistrationService
+public sealed class RegistrationService : IRegistrationService
 {
     private readonly HttpClient _httpClient;
 

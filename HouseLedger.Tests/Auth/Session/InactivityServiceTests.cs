@@ -13,9 +13,11 @@ public class InactivityServiceTests
     [Fact]
     public async Task Monitor_StartsOnceWithConfiguredTimings_AndStopsOnDisposal()
     {
+        // Arrange: inactivity service with deterministic timeout values.
         var js = new FakeJsRuntime();
         var service = new InactivityService(js, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(2));
 
+        // Act: toggle active state and dispose service.
         await service.SetActiveAsync(true);
         await service.SetActiveAsync(true);
         var start = Assert.Single(js.Calls, call => call.Identifier == "houseLedgerInactivity.startInactivityMonitor");
@@ -29,6 +31,7 @@ public class InactivityServiceTests
         await service.SetActiveAsync(true);
         await service.DisposeAsync();
 
+        // Assert: monitor starts/stops at expected transitions only.
         Assert.Single(js.Calls, call => call.Identifier == "houseLedgerInactivity.confirmActivity");
         Assert.Equal(2, js.Calls.Count(call => call.Identifier == "houseLedgerInactivity.startInactivityMonitor"));
         Assert.Equal(2, js.Calls.Count(call => call.Identifier == "houseLedgerInactivity.stopInactivityMonitor"));
@@ -37,6 +40,7 @@ public class InactivityServiceTests
     [Fact]
     public async Task Callbacks_RaiseWarning_AndAwaitTimeoutHandlers()
     {
+        // Arrange: callbacks capture warning and delayed timeout completion.
         var js = new FakeJsRuntime();
         await using var service = new InactivityService(js, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(2));
         var warnings = 0;
@@ -49,12 +53,14 @@ public class InactivityServiceTests
             timeoutCompleted = true;
         };
 
+        // Act: trigger warning and timeout callbacks.
         await service.OnSessionExpiringAsync();
         var timeout = service.OnInactivityTimeoutAsync();
         Assert.False(timeout.IsCompleted);
         completion.SetResult();
         await timeout;
 
+        // Assert: warning fires once and timeout callback is awaited.
         Assert.Equal(1, warnings);
         Assert.True(timeoutCompleted);
     }
@@ -62,22 +68,25 @@ public class InactivityServiceTests
     [Fact]
     public async Task SessionService_ForwardsWarning_AndLogsOutOnInactivity()
     {
+        // Arrange: authenticated session wired to inactivity events.
         await using var fixture = new AuthFixture();
         var warnings = 0;
         var authenticationChanges = 0;
         fixture.Session.SessionExpiring += () => warnings++;
         fixture.Auth.AuthenticationStateChanged += () => authenticationChanges++;
 
+        // Act: emit warning then timeout.
         await fixture.Auth.InitializeAsync();
         await fixture.Inactivity.OnSessionExpiringAsync();
         await fixture.Inactivity.OnInactivityTimeoutAsync();
 
+        // Assert: warning and forced logout both occur exactly once.
         Assert.Equal(1, warnings);
         Assert.Equal(1, authenticationChanges);
         Assert.Null(fixture.Auth.CurrentToken);
         Assert.Equal("You were logged out due to inactivity. Please sign in again.", fixture.Session.ConsumeForcedLogoutMessage());
         Assert.Equal("/login", fixture.Navigation.LastUri);
-        Assert.Contains("/api/v1/auth/logout", fixture.Handler.RequestedPaths);
+        Assert.Equal(1, fixture.Handler.RequestedPaths.Count(path => path == "/api/v1/auth/logout"));
         Assert.Single(fixture.Js.Calls, call => call.Identifier == "houseLedgerInactivity.stopInactivityMonitor");
         Assert.Null(fixture.Js.StoredAuthentication);
     }
@@ -87,14 +96,18 @@ public class InactivityServiceTests
     [InlineData(false)]
     public async Task ConfirmActivity_ResetsTimerOnlyAfterSuccessfulRefresh(bool refreshSucceeds)
     {
+        // Arrange: refresh endpoint is configured to succeed or fail.
         await using var fixture = new AuthFixture();
         fixture.Handler.RefreshSucceeds = refreshSucceeds;
         await fixture.Auth.InitializeAsync();
 
+        // Act: confirm activity through the session service.
         var result = await fixture.Session.ConfirmSessionActivityAsync();
 
+        // Assert: timer reset only happens when refresh succeeds.
         Assert.Equal(refreshSucceeds, result.Success);
         Assert.True(fixture.Handler.RefreshRequest?.IsActivityConfirmation);
+        Assert.Equal(1, fixture.Handler.RequestedPaths.Count(path => path == "/api/v1/auth/refresh"));
         Assert.Equal(refreshSucceeds ? 1 : 0,
             fixture.Js.Calls.Count(call => call.Identifier == "houseLedgerInactivity.confirmActivity"));
         Assert.Equal(refreshSucceeds, fixture.Auth.CurrentToken is not null);
@@ -103,15 +116,18 @@ public class InactivityServiceTests
     [Fact]
     public async Task DisposedSessionService_UnsubscribesFromInactivityCallbacks()
     {
+        // Arrange: initialize and then dispose session subscriptions.
         await using var fixture = new AuthFixture();
         var warnings = 0;
         fixture.Session.SessionExpiring += () => warnings++;
         await fixture.Auth.InitializeAsync();
         await fixture.Session.DisposeAsync();
 
+        // Act: trigger inactivity events after disposal.
         await fixture.Inactivity.OnSessionExpiringAsync();
         await fixture.Inactivity.OnInactivityTimeoutAsync();
 
+        // Assert: disposed session no longer reacts to inactivity callbacks.
         Assert.Equal(0, warnings);
         Assert.Empty(fixture.Handler.RequestedPaths);
         Assert.Null(fixture.Navigation.LastUri);
@@ -146,8 +162,9 @@ public class InactivityServiceTests
             _client = new HttpClient(Handler) { BaseAddress = new Uri("https://api.example/") };
             _storage = new AuthStorageService(Js);
             Inactivity = new InactivityService(Js, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(2));
-            Session = new SessionService(Inactivity, Navigation, () => Auth);
-            Auth = new AuthService(_client, _storage, Session);
+            var forcedLogoutMessageStore = new ForcedLogoutMessageStore();
+            Auth = new AuthService(_client, _storage, Inactivity, forcedLogoutMessageStore);
+            Session = new SessionService(Inactivity, Navigation, Auth, forcedLogoutMessageStore);
         }
 
         public async ValueTask DisposeAsync()

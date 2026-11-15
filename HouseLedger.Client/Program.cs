@@ -34,14 +34,17 @@ namespace HouseLedger.Client
         {
             builder.Services.AddMudServices();
             builder.Services.AddAuthorizationCore();
-            builder.Services.AddScoped<AuthStorageService>();
+            builder.Services.AddScoped<IAuthStorageService, AuthStorageService>();
+            builder.Services.AddScoped<IForcedLogoutMessageStore, ForcedLogoutMessageStore>();
 
             ConfigureRegistration(builder, apiBaseUrl);
             ConfigureSession(builder);
             ConfigureAuthentication(builder, apiBaseUrl);
+            // App domain clients use this pipeline so normal API calls always go through token handling.
             ConfigureAuthenticatedClient(builder, apiBaseUrl);
 
             builder.Services.AddScoped<IUserService, ClientUserService>();
+            builder.Services.AddScoped<DisplaySettingsState>();
             builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
         }
 
@@ -50,7 +53,7 @@ namespace HouseLedger.Client
             Uri apiBaseUrl)
         {
             // Registration uses a separate client without the authentication handler.
-            builder.Services.AddScoped(_ => new RegistrationService(new HttpClient
+            builder.Services.AddScoped<IRegistrationService>(_ => new RegistrationService(new HttpClient
             {
                 BaseAddress = apiBaseUrl
             }));
@@ -63,15 +66,16 @@ namespace HouseLedger.Client
             var warningBeforeLogoutMinutes =
                 builder.Configuration.GetValue("Session:WarningBeforeLogoutMinutes", 2d);
 
-            builder.Services.AddScoped(serviceProvider => new InactivityService(
+            builder.Services.AddScoped<IInactivityService>(serviceProvider => new InactivityService(
                 serviceProvider.GetRequiredService<IJSRuntime>(),
                 TimeSpan.FromMinutes(inactivityTimeoutMinutes),
                 TimeSpan.FromMinutes(warningBeforeLogoutMinutes)));
 
-            builder.Services.AddScoped(serviceProvider => new SessionService(
-                serviceProvider.GetRequiredService<InactivityService>(),
+            builder.Services.AddScoped<ISessionService, SessionService>(serviceProvider => new SessionService(
+                serviceProvider.GetRequiredService<IInactivityService>(),
                 serviceProvider.GetRequiredService<NavigationManager>(),
-                () => serviceProvider.GetRequiredService<IAuthService>()));
+                serviceProvider.GetRequiredService<IAuthService>(),
+                serviceProvider.GetRequiredService<IForcedLogoutMessageStore>()));
         }
 
         private static void ConfigureAuthentication(
@@ -79,20 +83,22 @@ namespace HouseLedger.Client
             Uri apiBaseUrl)
         {
             // Authentication also uses a separate client without the handler.
+            // This avoids recursive refresh/login calls through AuthMessageHandler.
             builder.Services.AddScoped<IAuthService>(serviceProvider => new AuthService(
                 new HttpClient
                 {
                     BaseAddress = apiBaseUrl
                 },
-                serviceProvider.GetRequiredService<AuthStorageService>(),
-                serviceProvider.GetRequiredService<SessionService>()));
+                serviceProvider.GetRequiredService<IAuthStorageService>(),
+                serviceProvider.GetRequiredService<IInactivityService>(),
+                serviceProvider.GetRequiredService<IForcedLogoutMessageStore>()));
         }
 
         private static void ConfigureAuthenticatedClient(
             WebAssemblyHostBuilder builder,
             Uri apiBaseUrl)
         {
-            // This handler instance is used by the scoped authenticated client.
+            // Keep the handler scoped so it shares scoped auth/session services per Blazor circuit.
             builder.Services.AddScoped<AuthMessageHandler>();
             builder.Services.AddScoped(serviceProvider =>
             {

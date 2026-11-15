@@ -25,6 +25,11 @@ namespace HouseLedger.Server.Data
                 .IsUnique()
                 .HasDatabaseName("EmailIndex");
 
+            builder.Entity<AppUser>()
+                .Property(user => user.TextSize)
+                .HasMaxLength(16)
+                .HasDefaultValue("Normal");
+
             builder.Entity<IdentityRole<Guid>>()
                 .Property(role => role.Id)
                 .HasValueGenerator<UuidV7ValueGenerator>();

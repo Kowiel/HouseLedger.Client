@@ -39,5 +39,10 @@ namespace HouseLedger.Shared.Models
         public string? DisplayName { get; set; }
         public DateTime? CreatedDate { get; set; } = DateTime.UtcNow;
 
+        public bool DarkModeEnabled { get; set; }
+        public string TextSize { get; set; } = "Normal";
+        public bool EmailNotificationsEnabled { get; set; } = true;
+        public bool WeeklySummaryEnabled { get; set; }
+
     }
 }

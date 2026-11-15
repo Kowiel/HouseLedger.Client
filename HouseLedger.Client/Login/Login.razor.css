@@ -115,7 +115,7 @@
 ::deep .login-card {
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 1.25rem;
-    background: rgba(255, 255, 255, 0.97);
+    background: var(--mud-palette-surface);
     overflow: hidden;
 }
 

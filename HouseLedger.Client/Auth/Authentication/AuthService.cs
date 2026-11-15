@@ -7,8 +7,10 @@ namespace HouseLedger.Client.Auth
     public class AuthService : IAuthService
     {
         private readonly HttpClient _httpClient;
-        private readonly AuthStorageService _authStorageService;
-        private readonly SessionService _sessionService;
+        private readonly IAuthStorageService _authStorageService;
+        private readonly IInactivityService _inactivityService;
+        private readonly IForcedLogoutMessageStore _forcedLogoutMessageStore;
+        // Refresh/init are guarded because multiple UI actions can race in Blazor WebAssembly.
         private readonly SemaphoreSlim _refreshLock = new(1, 1);
         private readonly SemaphoreSlim _initializationLock = new(1, 1);
         private TokenResponse? _currentToken;
@@ -20,11 +22,16 @@ namespace HouseLedger.Client.Auth
 
         public event Action? AuthenticationStateChanged;
 
-        public AuthService(HttpClient httpClient, AuthStorageService authStorageService, SessionService sessionService)
+        public AuthService(
+            HttpClient httpClient,
+            IAuthStorageService authStorageService,
+            IInactivityService inactivityService,
+            IForcedLogoutMessageStore forcedLogoutMessageStore)
         {
             _httpClient = httpClient;
             _authStorageService = authStorageService;
-            _sessionService = sessionService;
+            _inactivityService = inactivityService;
+            _forcedLogoutMessageStore = forcedLogoutMessageStore;
         }
 
         public async Task InitializeAsync()
@@ -91,7 +98,7 @@ namespace HouseLedger.Client.Auth
         public async Task ClearAuthenticationAsync(string? forcedLogoutMessage = null)
         {
             await InitializeAsync();
-            _sessionService.SetForcedLogoutMessage(forcedLogoutMessage);
+            _forcedLogoutMessageStore.SetForcedLogoutMessage(forcedLogoutMessage);
 
             var hadToken = _currentToken is not null;
             _currentToken = null;
@@ -117,7 +124,7 @@ namespace HouseLedger.Client.Auth
             }
         }
 
-        private Task UpdateInactivityMonitorAsync() => _sessionService.SetActiveAsync(_currentToken is not null);
+        private Task UpdateInactivityMonitorAsync() => _inactivityService.SetActiveAsync(_currentToken is not null);
 
         public async Task<ServiceResponse<TokenResponse>> RefreshAsync(bool force = false, bool isActivityConfirmation = false)
         {
@@ -137,6 +144,7 @@ namespace HouseLedger.Client.Auth
 
                 if (!await _authStorageService.IsCurrentTabOwnerAsync())
                 {
+                    // Ownership check prevents two tabs from mutating the same auth session concurrently.
                     await ClearAuthenticationAsync("This session is active in another tab. Please sign in again.");
                     return new ServiceResponse<TokenResponse>
                     {
@@ -179,6 +187,7 @@ namespace HouseLedger.Client.Auth
 
                 if (!await _authStorageService.IsCurrentTabOwnerAsync())
                 {
+                    // Re-check after network roundtrip in case ownership changed while waiting for response.
                     await ClearAuthenticationAsync("This session is active in another tab. Please sign in again.");
                     return new ServiceResponse<TokenResponse>
                     {

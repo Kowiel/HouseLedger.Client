@@ -71,6 +71,42 @@ namespace HouseLedger.Server.Controllers
             return Ok(result.Data);
         }
 
+        [HttpGet("me/settings", Name = "GetCurrentUserSettings")]
+        public async Task<ActionResult<UserSettingsDto>> GetUserSettingsAsync()
+        {
+            var userId = GetCurrentUserId();
+            if (userId is null)
+            {
+                return Unauthorized();
+            }
+
+            var result = await _userCrudService.GetUserSettings(userId.Value);
+            if (!result.Success || result.Data is null)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result.Data);
+        }
+
+        [HttpPut("me/settings", Name = "UpdateCurrentUserSettings")]
+        public async Task<ActionResult<bool>> UpdateUserSettingsAsync([FromBody] UpdateUserSettingsRequest request)
+        {
+            var userId = GetCurrentUserId();
+            if (userId is null)
+            {
+                return Unauthorized();
+            }
+
+            var result = await _userCrudService.UpdateUserSettings(request, userId.Value);
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result.Data);
+        }
+
         [HttpDelete("me", Name = "DeleteCurrentUser")]
         public async Task<ActionResult<bool>> DeleteUserAsync()
         {

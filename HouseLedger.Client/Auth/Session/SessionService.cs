@@ -4,20 +4,25 @@ using Microsoft.AspNetCore.Components;
 
 namespace HouseLedger.Client.Auth;
 
-public sealed class SessionService : IAsyncDisposable
+public sealed class SessionService : ISessionService
 {
-    private readonly InactivityService _inactivityService;
+    private readonly IInactivityService _inactivityService;
     private readonly NavigationManager _navigation;
-    private readonly Func<IAuthService> _getAuthService;
-    private string? _forcedLogoutMessage;
+    private readonly IAuthService _authService;
+    private readonly IForcedLogoutMessageStore _forcedLogoutMessageStore;
 
     public event Action? SessionExpiring;
 
-    public SessionService(InactivityService inactivityService, NavigationManager navigation, Func<IAuthService> getAuthService)
+    public SessionService(
+        IInactivityService inactivityService,
+        NavigationManager navigation,
+        IAuthService authService,
+        IForcedLogoutMessageStore forcedLogoutMessageStore)
     {
         _inactivityService = inactivityService;
         _navigation = navigation;
-        _getAuthService = getAuthService;
+        _authService = authService;
+        _forcedLogoutMessageStore = forcedLogoutMessageStore;
         _inactivityService.SessionExpiring += OnSessionExpiring;
         _inactivityService.InactivityTimedOut += OnInactivityTimeoutAsync;
     }
@@ -26,22 +31,14 @@ public sealed class SessionService : IAsyncDisposable
 
     public void SetForcedLogoutMessage(string? message)
     {
-        if (!string.IsNullOrWhiteSpace(message))
-        {
-            _forcedLogoutMessage ??= message;
-        }
+        _forcedLogoutMessageStore.SetForcedLogoutMessage(message);
     }
 
-    public string? ConsumeForcedLogoutMessage()
-    {
-        var message = _forcedLogoutMessage;
-        _forcedLogoutMessage = null;
-        return message;
-    }
+    public string? ConsumeForcedLogoutMessage() => _forcedLogoutMessageStore.ConsumeForcedLogoutMessage();
 
     public async Task<ServiceResponse<TokenResponse>> ConfirmSessionActivityAsync()
     {
-        var response = await _getAuthService().RefreshAsync(force: true, isActivityConfirmation: true);
+        var response = await _authService.RefreshAsync(force: true, isActivityConfirmation: true);
         if (response.Success)
         {
             await _inactivityService.ConfirmActivityAsync();
@@ -52,20 +49,20 @@ public sealed class SessionService : IAsyncDisposable
 
     private async Task OnInactivityTimeoutAsync()
     {
-        var authService = _getAuthService();
-        if (authService.CurrentToken is null)
+        if (_authService.CurrentToken is null)
         {
             return;
         }
 
+        // Persist a user-facing reason before auth state is cleared and navigation occurs.
         SetForcedLogoutMessage("You were logged out due to inactivity. Please sign in again.");
         try
         {
-            await authService.LogoutAsync();
+            await _authService.LogoutAsync();
         }
         finally
         {
-            await authService.ClearAuthenticationAsync();
+            await _authService.ClearAuthenticationAsync();
             _navigation.NavigateTo("/login");
         }
     }

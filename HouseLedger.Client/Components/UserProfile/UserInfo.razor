@@ -1,10 +1,7 @@
 ﻿@using System.ComponentModel.DataAnnotations
-@using HouseLedger.Client.Auth
 @using HouseLedger.Client.UserService
 @using HouseLedger.Shared.DTO.User
-@inject IAuthService AuthService
 @inject IUserService UserService
-@inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
 <MudCard Class="profile-card user-info-card" Elevation="6">
@@ -31,7 +28,7 @@
                 <MudTextField Label="Last name" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Badge"
                               @bind-Value="model.LastName" For="@(() => model.LastName)" />
                 <MudTextField Label="Username" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AccountCircle"
-                              @bind-Value="model.UserName" For="@(() => model.UserName)" Disabled="true" />
+                              Value="@userName" Disabled="true" />
                 <MudTextField Label="Display name" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Badge"
                               @bind-Value="model.DisplayName" For="@(() => model.DisplayName)" />
                 <MudTextField Label="Phone number" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Phone"
@@ -53,19 +50,13 @@
 </MudCard>
 
 @code {
-    private UserInfoForm model = new();
+    private UpdateUserRequest model = new();
+    private string userName = string.Empty;
     private bool saved;
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        var userId = AuthService.CurrentUserId;
-        if (userId is null)
-        {
-            Navigation.NavigateTo("/login");
-            return;
-        }
-
         var result = await UserService.GetFullAsync();
         if (!result.Success || result.Data is null)
         {
@@ -74,21 +65,22 @@
             return;
         }
 
-        model = UserInfoForm.FromUser(result.Data);
+        userName = result.Data.UserName;
+        model = new UpdateUserRequest
+        {
+            FirstName = result.Data.FirstName,
+            LastName = result.Data.LastName,
+            DisplayName = result.Data.DisplayName ?? result.Data.UserName,
+            PhoneNumber = result.Data.PhoneNumber,
+            Email = result.Data.Email
+        };
         isLoading = false;
     }
 
     private async Task SaveChanges(EditContext context)
     {
         saved = false;
-        var userId = AuthService.CurrentUserId;
-        if (userId is null)
-        {
-            Navigation.NavigateTo("/login");
-            return;
-        }
-
-        var result = await UserService.UpdateAsync(model.ToRequest());
+        var result = await UserService.UpdateAsync(model);
         if (!result.Success)
         {
             Snackbar.Add(result.Message ?? "Changes could not be saved.", Severity.Error);
@@ -97,45 +89,5 @@
 
         saved = true;
         Snackbar.Add("Profile updated successfully.", Severity.Success);
-    }
-
-    private sealed class UserInfoForm
-    {
-        [Required, MaxLength(50)]
-        public string FirstName { get; set; } = string.Empty;
-
-        [Required, MaxLength(50)]
-        public string LastName { get; set; } = string.Empty;
-
-        [Required, MinLength(4), MaxLength(100)]
-        public string UserName { get; set; } = "TestUser";
-
-        [Required, MinLength(4), MaxLength(100)]
-        public string DisplayName { get; set; } = string.Empty;
-
-        [Phone]
-        public string? PhoneNumber { get; set; }
-
-        [Required, EmailAddress]
-        public string Email { get; set; } = string.Empty;
-
-        public UpdateUserRequest ToRequest() => new()
-        {
-            DisplayName = DisplayName,
-            Email = Email,
-            PhoneNumber = PhoneNumber,
-            FirstName = FirstName,
-            LastName = LastName
-        };
-
-        public static UserInfoForm FromUser(FullUserInfo user) => new()
-        {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            UserName = user.UserName,
-            DisplayName = user.DisplayName ?? user.UserName,
-            PhoneNumber = user.PhoneNumber,
-            Email = user.Email
-        };
     }
 }
