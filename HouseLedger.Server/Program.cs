@@ -146,9 +146,9 @@ namespace HouseLedger.Server
             {
                 options.AddPolicy("AllowBlazorClient", policy =>
                 {
-                    policy.WithOrigins("https://localhost:7006")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
+                    policy.WithOrigins("https://localhost:7006", "http://localhost:5071")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
                 });
             });
 

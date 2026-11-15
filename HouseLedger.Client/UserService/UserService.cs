@@ -39,6 +39,26 @@ public sealed class UserService : IUserService
         };
     }
 
+    public async Task<ServiceResponse<UserSettingsDto?>> GetSettingsAsync()
+    {
+        using var response = await _httpClient.GetAsync("api/v1/user/crud/me/settings");
+        if (!response.IsSuccessStatusCode)
+        {
+            return new ServiceResponse<UserSettingsDto?>
+            {
+                Success = false,
+                Message = await ReadErrorMessageAsync(response, "User settings could not be loaded.")
+            };
+        }
+
+        return new ServiceResponse<UserSettingsDto?>
+        {
+            Data = await response.Content.ReadFromJsonAsync<UserSettingsDto>(),
+            Success = true,
+            Message = "User settings loaded successfully."
+        };
+    }
+
     public async Task<ServiceResponse<FullUserInfo?>> GetFullAsync()
     {
         using var response = await _httpClient.GetAsync("api/v1/user/crud/me");
@@ -63,6 +83,18 @@ public sealed class UserService : IUserService
     {
         using var response = await _httpClient.PutAsJsonAsync("api/v1/user/crud/me", request);
         return await ReadBooleanResponseAsync(response, "User updated successfully.", "User update failed.");
+    }
+
+    public async Task<ServiceResponse<bool>> UpdatePasswordAsync(UpdateUserPasswordRequest request)
+    {
+        using var response = await _httpClient.PutAsJsonAsync("api/v1/user/crud/me/password", request);
+        return await ReadBooleanResponseAsync(response, "Password updated successfully.", "Password update failed.");
+    }
+
+    public async Task<ServiceResponse<bool>> UpdateSettingsAsync(UpdateUserSettingsRequest request)
+    {
+        using var response = await _httpClient.PutAsJsonAsync("api/v1/user/crud/me/settings", request);
+        return await ReadBooleanResponseAsync(response, "User settings updated successfully.", "User settings update failed.");
     }
 
     public async Task<ServiceResponse<bool>> DeleteAsync()

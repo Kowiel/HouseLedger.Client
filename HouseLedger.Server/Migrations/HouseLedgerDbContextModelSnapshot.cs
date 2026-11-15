@@ -38,6 +38,9 @@ namespace HouseLedger.Server.Migrations
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("DarkModeEnabled")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("DisplayName")
                         .HasColumnType("text");
 
@@ -46,6 +49,9 @@ namespace HouseLedger.Server.Migrations
                         .HasColumnType("character varying(256)");
 
                     b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("EmailNotificationsEnabled")
                         .HasColumnType("boolean");
 
                     b.Property<string>("FirstName")
@@ -80,12 +86,22 @@ namespace HouseLedger.Server.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
+                    b.Property<string>("TextSize")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("Normal");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("WeeklySummaryEnabled")
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 

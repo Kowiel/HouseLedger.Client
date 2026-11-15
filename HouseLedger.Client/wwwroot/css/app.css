@@ -3,6 +3,65 @@ html, body {
     background-color: gray;
 }
 
+body.mud-theme-dark {
+    background-color: #121826;
+    color: #e8ecf8;
+}
+
+/* Global dark surface overrides for page-scoped card/list layouts */
+body.mud-theme-dark .mud-card,
+body.mud-theme-dark .mud-paper,
+body.mud-theme-dark [class$="-card"],
+body.mud-theme-dark [class*="-card "],
+body.mud-theme-dark [class$="-list"],
+body.mud-theme-dark [class*="-list "],
+body.mud-theme-dark [class*="-tile"],
+body.mud-theme-dark [class*=" tile-"] {
+    background-color: #1f2636 !important;
+    color: #e8ecf8;
+}
+
+body.mud-theme-dark [class$="-card"] *,
+body.mud-theme-dark [class*="-card "] *,
+body.mud-theme-dark [class$="-list"] *,
+body.mud-theme-dark [class*="-list "] * {
+    color: inherit;
+}
+
+body.mud-theme-dark .mud-typography,
+body.mud-theme-dark .mud-input-input,
+body.mud-theme-dark .mud-input-label,
+body.mud-theme-dark .mud-select-input,
+body.mud-theme-dark .mud-button-label {
+    color: #e8ecf8 !important;
+}
+
+body.mud-theme-dark .mud-typography-caption,
+body.mud-theme-dark .mud-typography-body2,
+body.mud-theme-dark .mud-input-helper-text {
+    color: #c3cadb !important;
+}
+
+body.mud-theme-dark [class*="subtitle"],
+body.mud-theme-dark [class*="sub-title"],
+body.mud-theme-dark [class*="note"],
+body.mud-theme-dark [class*="meta"],
+body.mud-theme-dark [class*="copy"] {
+    color: #c3cadb !important;
+}
+
+body.mud-theme-dark .mud-card .mud-input-input,
+body.mud-theme-dark .mud-card .mud-select-input,
+body.mud-theme-dark .mud-card .mud-input-label {
+    color: #e8ecf8 !important;
+}
+
+body.mud-theme-dark [class*="option"],
+body.mud-theme-dark [class*="row"],
+body.mud-theme-dark [class*="item"] {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
 h1:focus {
     outline: none;
 }
@@ -23,7 +82,6 @@ a, .btn-link {
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
     background-color: #1b6ec2;
     border-color: #1861ac;
 }

@@ -3,7 +3,6 @@
     padding: 3rem 1.25rem 4rem;
     position: relative;
     overflow: hidden;
-    transition: background-color 180ms ease;
 }
 
 .settings-page::before,
@@ -37,7 +36,7 @@
 }
 
 .settings-heading {
-    max-width: 780px;
+    max-width: 940px;
     margin: 0 auto 2rem;
     color: white;
 }
@@ -64,20 +63,20 @@
 }
 
 .settings-content {
-    max-width: 780px;
+    max-width: 940px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
     margin: 0 auto;
 }
 
-::deep .settings-card {
-    margin-bottom: 1.25rem;
-    border-radius: 1.15rem;
-    background: rgba(255, 255, 255, 0.97);
-    overflow: hidden;
-    transition: background-color 180ms ease, color 180ms ease;
+::deep .settings-card,
+::deep .password-card {
+    grid-column: 1 / -1;
 }
 
 ::deep .settings-card-content {
-    padding: 1.75rem 2rem 1rem;
+    padding: 1.75rem 2rem 1.25rem;
 }
 
 .settings-section-heading {
@@ -109,10 +108,10 @@
     border-radius: 0.8rem;
 }
 
-.sms-icon { color: #3979d8; background: #e9f1ff; }
+.appearance-icon { color: #5364c2; background: #e9ebff; }
+.text-icon { color: #2e8b57; background: #eaf7ef; }
 .email-icon { color: #9c60d1; background: #f5eaff; }
 .summary-icon { color: #d18132; background: #fff2df; }
-.appearance-icon { color: #5364c2; background: #e9ebff; }
 
 .option-copy {
     flex: 1;
@@ -127,50 +126,62 @@
     line-height: 1.45;
 }
 
-::deep .settings-option .mud-switch {
-    flex: 0 0 auto;
+::deep .settings-select {
+    min-width: 130px;
 }
 
-.settings-note {
+.settings-footer {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    color: rgba(255, 255, 255, 0.7);
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
 }
 
-.settings-note .mud-icon-root {
-    color: #a9e5bd;
+.saved-message {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: #2e8b57;
 }
 
-.settings-dark::deep .settings-card {
-    background: #202638;
-    color: #f3f5ff;
+body.mud-theme-dark .settings-section-heading {
+    color: #b9c7ff;
 }
 
-.settings-dark .settings-option {
-    border-color: rgba(255, 255, 255, 0.12);
+body.mud-theme-dark .settings-section-heading .mud-typography-caption,
+body.mud-theme-dark .option-copy .mud-typography-body2 {
+    color: #c3cadb;
 }
 
-.settings-dark .option-copy .mud-typography-body2,
-.settings-dark .settings-section-heading .mud-typography-caption {
-    color: #b9c0d2;
+body.mud-theme-dark .settings-option {
+    border-top-color: rgba(255, 255, 255, 0.12);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
     .settings-page {
         padding: 2.25rem 1rem 3rem;
     }
 
-    ::deep .settings-card-content {
-        padding: 1.35rem 1.25rem 0.75rem;
+    .settings-content {
+        grid-template-columns: 1fr;
+    }
+
+    ::deep .settings-card,
+    ::deep .password-card {
+        grid-column: auto;
     }
 
     .settings-option {
-        gap: 0.7rem;
+        align-items: flex-start;
     }
 
-    .option-icon {
-        display: none;
+    ::deep .settings-select {
+        width: 100%;
+    }
+
+    .settings-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
     }
 }

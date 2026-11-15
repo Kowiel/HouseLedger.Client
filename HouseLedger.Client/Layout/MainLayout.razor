@@ -1,6 +1,11 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
+@using HouseLedger.Client.UserService
+@inject IUserService UserService
+@inject DisplaySettingsState DisplaySettingsState
+@inject IJSRuntime JsRuntime
 
-<MudThemeProvider />
+<MudThemeProvider IsDarkMode="@isDarkMode" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -28,4 +33,46 @@
     </MudMainContent>
 
 </MudLayout>
+
+@code {
+    private bool isDarkMode;
+
+    protected override async Task OnInitializedAsync()
+    {
+        DisplaySettingsState.Changed += OnDisplaySettingsChanged;
+        await LoadDisplaySettingsAsync();
+        await ApplyDisplaySettingsAsync();
+    }
+
+    private async Task LoadDisplaySettingsAsync()
+    {
+        var result = await UserService.GetSettingsAsync();
+        if (!result.Success || result.Data is null)
+        {
+            return;
+        }
+
+        DisplaySettingsState.Update(result.Data.DarkModeEnabled, result.Data.TextSize);
+    }
+
+    private void OnDisplaySettingsChanged()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await ApplyDisplaySettingsAsync();
+            StateHasChanged();
+        });
+    }
+
+    private async Task ApplyDisplaySettingsAsync()
+    {
+        isDarkMode = DisplaySettingsState.DarkModeEnabled;
+        await JsRuntime.InvokeVoidAsync("houseLedgerDisplaySettings.applyTextSize", DisplaySettingsState.TextSize);
+    }
+
+    public void Dispose()
+    {
+        DisplaySettingsState.Changed -= OnDisplaySettingsChanged;
+    }
+}
 

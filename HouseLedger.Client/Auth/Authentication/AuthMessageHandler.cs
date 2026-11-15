@@ -17,6 +17,7 @@ namespace HouseLedger.Client.Auth
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken cancellationToken)
         {
+            // Auth endpoints must bypass this handler to prevent refresh/login recursion.
             if (IsAuthRequest(request))
             {
                 return await base.SendAsync(request, cancellationToken);
@@ -40,6 +41,7 @@ namespace HouseLedger.Client.Auth
             }
 
             AddAccessToken(request);
+            // Clone up-front so we can retry once after a forced refresh if the first call is 401.
             var retryRequest = await CloneRequestAsync(request);
             var response = await base.SendAsync(request, cancellationToken);
 
@@ -107,6 +109,7 @@ namespace HouseLedger.Client.Auth
 
         private static async Task<HttpRequestMessage> CloneRequestAsync(HttpRequestMessage request)
         {
+            // HttpRequestMessage is single-use for content streams, so retries require a deep clone.
             var clone = new HttpRequestMessage(request.Method, request.RequestUri)
             {
                 Version = request.Version,
