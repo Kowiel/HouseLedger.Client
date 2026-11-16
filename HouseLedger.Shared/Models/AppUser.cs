@@ -42,7 +42,7 @@ namespace HouseLedger.Shared.Models
         public bool DarkModeEnabled { get; set; }
         public string TextSize { get; set; } = "Normal";
         public bool EmailNotificationsEnabled { get; set; } = true;
-        public bool WeeklySummaryEnabled { get; set; }
+        public bool WeeklySummaryEnabled { get; set; } // Remove that property TO DO!
 
     }
 }

@@ -5,6 +5,8 @@
         public const string Base = "api/v1";
         public const string WeatherForecast = Base + "/weather";
         public const string Tools = Base + "/tools";
+        public const string Rooms = Base + "/rooms";
+        public const string Contacts = Base + "/contacts";
         public const string UserCRUD = Base + "/user/crud";
         public const string Autorization = Base + "/auth";
     }
