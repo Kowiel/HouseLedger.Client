@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using HouseLedger.Server.StaticClasses;
 using HouseLedger.Server.ToolServices;
+using HouseLedger.Shared.DTO.Tool;
 using HouseLedger.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 
