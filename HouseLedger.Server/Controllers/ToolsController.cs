@@ -4,12 +4,14 @@ using HouseLedger.Server.StaticClasses;
 using HouseLedger.Server.ToolServices;
 using HouseLedger.Shared.DTO.Tool;
 using HouseLedger.Shared.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HouseLedger.Server.Controllers
 {
     [ApiController]
     [Route(ApiRoutes.Tools)]
+    [Authorize]
     public class ToolsController: ControllerBase
     {
         private readonly IToolService _toolService;

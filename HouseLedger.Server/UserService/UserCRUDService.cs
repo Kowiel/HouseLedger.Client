@@ -3,10 +3,7 @@ using HouseLedger.Shared.DTO.User;
 using HouseLedger.Shared.Models;
 using HouseLedger.Shared.Response;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.EntityFrameworkCore;
-using Superpower.Model;
-using System.ComponentModel;
 using System.Diagnostics;
 
 namespace HouseLedger.Server.UserService
@@ -15,7 +12,10 @@ namespace HouseLedger.Server.UserService
     {
         private readonly HouseLedgerDbContext _dbContext;
         private readonly UserManager<AppUser> _userManager;
-        public UserCRUDService(HouseLedgerDbContext dbContext, UserManager<AppUser> userManager)
+
+        public UserCRUDService(
+            HouseLedgerDbContext dbContext,
+            UserManager<AppUser> userManager)
         {
             _dbContext = dbContext;
             _userManager = userManager;
@@ -67,40 +67,35 @@ namespace HouseLedger.Server.UserService
 
         public async Task<ServiceResponse<FullUserInfo?>> GetFullUserById(Guid userId)
         {
-            var user = await _userManager.FindByIdAsync(userId.ToString());
+            var user = await _dbContext.Users
+                .AsNoTracking()
+                .SingleOrDefaultAsync(currentUser => currentUser.Id == userId);
 
-            var fullUserInfo = user is null ? null : new FullUserInfo
+            var fullUserInfo = user is null
+                ? null
+                : FullUserInfo.FromEntity(user);
+
+            return new ServiceResponse<FullUserInfo?>
             {
-                Id= user.Id,
-                UserName = user.UserName,
-                NormalizedUserName = user.NormalizedUserName,
-                Email = user.Email,
-                NormalizedEmail = user.NormalizedEmail,
-                PhoneNumber = user.PhoneNumber,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                DisplayName = user.DisplayName,
-                CreatedDate = user.CreatedDate
+                Data = fullUserInfo,
+                Success = fullUserInfo is not null,
+                Message = fullUserInfo is not null ? "User found." : "User not found."
             };
-
-            return new ServiceResponse<FullUserInfo?> { Data = fullUserInfo, Success = fullUserInfo != null ? true : false, Message = fullUserInfo != null ? "User found." : "User not found." };
         }
 
         public async Task<ServiceResponse<BasicUserInfo?>> GetUserById(Guid userId)
         {
-            var user = await _userManager.FindByIdAsync(userId.ToString());
+            var fullUser = await GetFullUserById(userId);
+            var basicUserInfo = fullUser.Data is null
+                ? null
+                : BasicUserInfo.FromEntity(fullUser.Data);
 
-            var basicUserInfo = user is null ? null : new BasicUserInfo
+            return new ServiceResponse<BasicUserInfo?>
             {
-                UserName = user.UserName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                DisplayName = user.DisplayName
+                Data = basicUserInfo,
+                Success = basicUserInfo is not null,
+                Message = basicUserInfo is not null ? "User found." : "User not found."
             };
-
-            return new ServiceResponse<BasicUserInfo?> { Data = basicUserInfo, Success = basicUserInfo != null ? true : false, Message = basicUserInfo != null ? "User found." : "User not found." };
         }
 
         public async Task<ServiceResponse<bool>> UpdateUser(UpdateUserRequest request, Guid userId)
@@ -115,9 +110,10 @@ namespace HouseLedger.Server.UserService
 
             user.DisplayName = request.DisplayName;
             user.Email = request.Email;
+            user.PhoneNumber = request.PhoneNumber;
             user.FirstName = request.FirstName;
             user.LastName = request.LastName;
-           
+
             var result = await _userManager.UpdateAsync(user);
 
             return new ServiceResponse<bool> { Data = result.Succeeded, Success = result.Succeeded, Message = result.Succeeded ? "User updated successfully." : $"Failed to update user: {string.Join(", ", result.Errors.Select(e => e.Description))}" };
@@ -126,6 +122,16 @@ namespace HouseLedger.Server.UserService
 
         public async Task<ServiceResponse<bool>> UpdateUserPassword(UpdateUserPasswordRequest request, Guid userId)
         {
+            if (!string.Equals(request.NewPassword, request.RetypeNewPassword, StringComparison.Ordinal))
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Success = false,
+                    Message = "Passwords do not match."
+                };
+            }
+
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
             if (user is null)
@@ -137,32 +143,87 @@ namespace HouseLedger.Server.UserService
             return new ServiceResponse<bool> { Data = result.Succeeded, Success = result.Succeeded, Message = result.Succeeded ? "User password updated successfully." : $"Failed to update user password: {string.Join(", ", result.Errors.Select(e => e.Description))}" };
         }
 
+        public async Task<ServiceResponse<UserSettingsDto?>> GetUserSettings(Guid userId)
+        {
+            var user = await _dbContext.Users
+                .AsNoTracking()
+                .SingleOrDefaultAsync(currentUser => currentUser.Id == userId);
+
+            if (user is null)
+            {
+                return new ServiceResponse<UserSettingsDto?>
+                {
+                    Data = null,
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
+
+            return new ServiceResponse<UserSettingsDto?>
+            {
+                Data = new UserSettingsDto
+                {
+                    DarkModeEnabled = user.DarkModeEnabled,
+                    TextSize = string.IsNullOrWhiteSpace(user.TextSize) ? "Normal" : user.TextSize,
+                    EmailNotificationsEnabled = user.EmailNotificationsEnabled,
+                    WeeklySummaryEnabled = user.WeeklySummaryEnabled
+                },
+                Success = true,
+                Message = "User settings loaded successfully."
+            };
+        }
+
+        public async Task<ServiceResponse<bool>> UpdateUserSettings(UpdateUserSettingsRequest request, Guid userId)
+        {
+            if (!IsSupportedTextSize(request.TextSize))
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Success = false,
+                    Message = "Text size must be Small, Normal, or Large."
+                };
+            }
+
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user is null)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Data = false,
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
+
+            user.DarkModeEnabled = request.DarkModeEnabled;
+            user.TextSize = request.TextSize;
+            user.EmailNotificationsEnabled = request.EmailNotificationsEnabled;
+            user.WeeklySummaryEnabled = request.WeeklySummaryEnabled;
+
+            var result = await _userManager.UpdateAsync(user);
+            return new ServiceResponse<bool>
+            {
+                Data = result.Succeeded,
+                Success = result.Succeeded,
+                Message = result.Succeeded
+                    ? "User settings updated successfully."
+                    : $"Failed to update user settings: {string.Join(", ", result.Errors.Select(e => e.Description))}"
+            };
+        }
+
 
         private async Task<bool> IsDistinctUser(string email, string userName)
         {
-            var existingUserByEmail = await _userManager.FindByEmailAsync(email);
-            if (existingUserByEmail != null)
-            {
-                return false;
-            }
+            var normalizedEmail = _userManager.NormalizeEmail(email);
+            var normalizedUserName = _userManager.NormalizeName(userName);
 
-            var existingUserByName = await _userManager.FindByNameAsync(userName);
-            if (existingUserByName != null)
-            {
-                return false;
-            }
-
-            return true;
+            return !await _dbContext.Users
+                .AsNoTracking()
+                .AnyAsync(user => user.NormalizedEmail == normalizedEmail || user.NormalizedUserName == normalizedUserName);
         }
-        private async Task<bool> IsDistinctUser(string email)
-        {
-            var existingUserByEmail = await _userManager.FindByEmailAsync(email);
-            if (existingUserByEmail != null)
-            {
-                return false;
-            }
 
-            return true;
-        }
+        private static bool IsSupportedTextSize(string value) =>
+            value is "Small" or "Normal" or "Large";
     }
 }
