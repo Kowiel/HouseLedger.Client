@@ -20,6 +20,12 @@
             </div>
             <MudTextField Label="Serial number" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Tag"
                           @bind-Value="model.SerialNumber" For="@(() => model.SerialNumber)" />
+            <MudSelect T="Guid?" Label="Room" @bind-Value="model.RoomId" Clearable="true">
+                @foreach (var room in Rooms)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)room.Id)">@room.Name</MudSelectItem>
+                }
+            </MudSelect>
             <MudTextField Label="Notes" Lines="3" Variant="Variant.Outlined" @bind-Value="model.Notes" For="@(() => model.Notes)" />
         </div>
         <div class="tool-editor-actions">
@@ -36,6 +42,9 @@
     [Parameter]
     public EventCallback OnCancel { get; set; }
 
+    [Parameter]
+    public IReadOnlyList<Room> Rooms { get; set; } = [];
+
     private ToolForm model = new();
 
     private Task Save(EditContext context) => OnSaved.InvokeAsync(new Tool
@@ -46,7 +55,9 @@
         Brand = model.Brand,
         Model = model.Model,
         SerialNumber = model.SerialNumber,
-        Notes = model.Notes
+        Notes = model.Notes,
+        RoomId = model.RoomId,
+        Room = Rooms.FirstOrDefault(room => room.Id == model.RoomId)
     });
 
     private Task Cancel() => OnCancel.InvokeAsync();
@@ -67,6 +78,8 @@
 
         [MaxLength(100)]
         public string? SerialNumber { get; set; }
+
+        public Guid? RoomId { get; set; }
 
         [MaxLength(500)]
         public string? Notes { get; set; }

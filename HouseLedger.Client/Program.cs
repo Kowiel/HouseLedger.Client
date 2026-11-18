@@ -1,12 +1,18 @@
 using MudBlazor.Services;
 using HouseLedger.Client.Auth;
+using HouseLedger.Client.RoomService;
+using HouseLedger.Client.ToolService;
 using HouseLedger.Client.UserService;
-using ClientUserService = HouseLedger.Client.UserService.UserService;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
+
+//Using statements to avoid issues with the same class names in different namespaces
+using ClientToolService = HouseLedger.Client.ToolService.ToolService;
+using ClientRoomService = HouseLedger.Client.RoomService.RoomService;
+using ClientUserService = HouseLedger.Client.UserService.UserService;
 
 namespace HouseLedger.Client
 {
@@ -44,6 +50,8 @@ namespace HouseLedger.Client
             ConfigureAuthenticatedClient(builder, apiBaseUrl);
 
             builder.Services.AddScoped<IUserService, ClientUserService>();
+            builder.Services.AddScoped<IRoomService, ClientRoomService>();
+            builder.Services.AddScoped<IToolService, ClientToolService>();
             builder.Services.AddScoped<DisplaySettingsState>();
             builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
         }

@@ -1,6 +1,11 @@
 ﻿@page "/tools"
 @attribute [Authorize]
+@using HouseLedger.Client.RoomService
+@using HouseLedger.Client.ToolService
+@using HouseLedger.Shared.DTO.Tool
 @using HouseLedger.Shared.Models
+@inject IRoomService RoomService
+@inject IToolService ToolService
 
 <PageTitle>Tools</PageTitle>
 
@@ -33,11 +38,11 @@
 
                 @if (isAdding)
                 {
-                    <AddTool OnSaved="AddTool" OnCancel="ClosePanel" />
+                    <AddTool Rooms="rooms" OnSaved="AddTool" OnCancel="ClosePanel" />
                 }
                 else if (isEditing && selectedTool is not null)
                 {
-                    <EditTool Tool="selectedTool" OnSaved="UpdateTool" OnCancel="ClosePanel" />
+                    <EditTool Tool="selectedTool" Rooms="rooms" OnSaved="UpdateTool" OnCancel="ClosePanel" />
                 }
                 else if (selectedTool is not null)
                 {
@@ -49,11 +54,26 @@
 </div>
 
 @code {
-    private List<Tool> tools = CreateTools();
+    private List<Tool> tools = [];
+    private List<Room> rooms = [];
     private Tool? selectedTool;
     private bool showPanel;
     private bool isAdding;
     private bool isEditing;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(RefreshTools(), LoadRooms());
+    }
+
+    private async Task LoadRooms()
+    {
+        var response = await RoomService.GetAllAsync();
+        if (response.Success)
+        {
+            rooms = response.Data?.ToList() ?? [];
+        }
+    }
 
     private void OpenTool(Tool tool)
     {
@@ -88,44 +108,71 @@
         isEditing = false;
     }
 
-    private void RefreshTools()
+    private async Task RefreshTools()
     {
-        tools = CreateTools();
+        var response = await ToolService.GetAllAsync();
+        if (response.Success)
+        {
+            tools = response.Data?.ToList() ?? [];
+        }
+
         selectedTool = null;
         ClosePanel();
     }
 
-    private void AddTool(Tool tool)
+    private async Task AddTool(Tool tool)
     {
-        tools.Insert(0, tool);
-        selectedTool = tool;
+        var response = await ToolService.CreateAsync(ToRequest(tool));
+        if (!response.Success || response.Data is null)
+        {
+            return;
+        }
+
+        tools.Insert(0, response.Data);
+        selectedTool = response.Data;
         isAdding = false;
         showPanel = true;
     }
 
-    private void UpdateTool(Tool updatedTool)
+    private async Task UpdateTool(Tool updatedTool)
     {
-        var index = tools.FindIndex(tool => tool.Id == updatedTool.Id);
+        if (selectedTool is null)
+        {
+            return;
+        }
+
+        updatedTool.LentToContactId = selectedTool.LentToContactId;
+        updatedTool.LentToContact = selectedTool.LentToContact;
+        updatedTool.LentAt = selectedTool.LentAt;
+
+        var response = await ToolService.UpdateAsync(updatedTool.Id, ToRequest(updatedTool));
+        if (!response.Success || response.Data is null)
+        {
+            return;
+        }
+
+        var savedTool = response.Data;
+        var index = tools.FindIndex(tool => tool.Id == savedTool.Id);
         if (index >= 0)
         {
-            tools[index] = updatedTool;
-            selectedTool = updatedTool;
+            tools[index] = savedTool;
+            selectedTool = savedTool;
         }
 
         isEditing = false;
         showPanel = true;
     }
 
-    private static List<Tool> CreateTools() =>
-    [
-        new() { Id = Guid.CreateVersion7(), Name = "Cordless drill", Description = "18V compact drill", Brand = "Makita", Model = "DHP485", SerialNumber = "MK-20481", Room = new Room { Name = "Garage" } },
-        new() { Id = Guid.CreateVersion7(), Name = "Step ladder", Description = "6 ft. folding step ladder", Brand = "Werner", Model = "6006", Room = new Room { Name = "Garage" }, LentToContact = new Contact { DisplayName = "Alex Johnson" }, LentAt = DateTime.UtcNow.AddDays(-10) },
-        new() { Id = Guid.CreateVersion7(), Name = "Pressure washer", Description = "Electric pressure washer", Brand = "Karcher", Model = "K2", Room = new Room { Name = "Garden shed" }, Notes = "Store in the garage" },
-        new() { Id = Guid.CreateVersion7(), Name = "Circular saw", Description = "7-1/4 in. circular saw", Brand = "DeWalt", Model = "DWE575", Room = new Room { Name = "Garage" }, LentToContact = new Contact { DisplayName = "Morgan Lee" }, LentAt = DateTime.UtcNow.AddDays(-4) },
-        new() { Id = Guid.CreateVersion7(), Name = "Garden trimmer", Description = "Battery-powered trimmer", Brand = "Ryobi", Model = "P2009", Room = new Room { Name = "Garden shed" }, Notes = "Includes spare battery" },
-        new() { Id = Guid.CreateVersion7(), Name = "Socket set", Description = "84-piece mechanic socket set", Brand = "Craftsman", Model = "CMMT120", SerialNumber = "CR-91832", Room = new Room { Name = "Garage" } },
-        new() { Id = Guid.CreateVersion7(), Name = "Orbital sander", Description = "5 in. random orbital sander", Brand = "Bosch", Model = "ROS20VSC", Room = new Room { Name = "Garage" }, LentToContact = new Contact { DisplayName = "Taylor Smith" }, LentAt = DateTime.UtcNow.AddDays(-2) },
-        new() { Id = Guid.CreateVersion7(), Name = "Workbench vise", Description = "Heavy-duty bench vise", Brand = "Yost", Model = "LV-4", Room = new Room { Name = "Garage" } }
-    ];
-    }
+    private static ToolRequest ToRequest(Tool tool) => new()
+    {
+        Name = tool.Name,
+        Description = tool.Description,
+        Brand = tool.Brand,
+        Model = tool.Model,
+        SerialNumber = tool.SerialNumber,
+        Notes = tool.Notes,
+        RoomId = tool.RoomId,
+        LentToContactId = tool.LentToContactId,
+        LentAt = tool.LentAt
+    };
 }

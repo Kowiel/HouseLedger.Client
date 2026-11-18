@@ -1,6 +1,12 @@
 ﻿@page "/rooms"
 @attribute [Authorize]
+@using HouseLedger.Client.RoomService
+@using HouseLedger.Client.ToolService
+@using HouseLedger.Shared.DTO.Room
+@using HouseLedger.Shared.DTO.Tool
 @using HouseLedger.Shared.Models
+@inject IRoomService RoomService
+@inject IToolService ToolService
 
 <PageTitle>Rooms</PageTitle>
 
@@ -55,7 +61,7 @@
                 }
                 else if (selectedRoom is not null)
                 {
-                    <RoomDetails Room="selectedRoom" OnEdit="OpenEdit" OnClose="ClosePanel" />
+                    <RoomDetails Room="selectedRoom" AvailableTools="tools" OnAssignTool="AssignToolToRoom" OnEdit="OpenEdit" OnClose="ClosePanel" />
                 }
             </div>
         }
@@ -63,11 +69,14 @@
 </div>
 
 @code {
-    private List<Room> rooms = CreateRooms();
+    private List<Room> rooms = [];
+    private List<Tool> tools = [];
     private Room? selectedRoom;
     private bool showPanel;
     private bool isAdding;
     private bool isEditing;
+
+    protected override Task OnInitializedAsync() => RefreshRooms();
 
     private void OpenRoom(Room room)
     {
@@ -102,45 +111,102 @@
         isEditing = false;
     }
 
-    private void RefreshRooms()
+    private async Task RefreshRooms()
     {
-        rooms = CreateRooms();
+        await LoadRoomData();
+
         selectedRoom = null;
         ClosePanel();
     }
 
-    private void CreateRoom(Room room)
+    private async Task LoadRoomData()
     {
-        rooms.Insert(0, room);
-        selectedRoom = room;
+        var roomsTask = RoomService.GetAllAsync();
+        var toolsTask = ToolService.GetAllAsync();
+        await Task.WhenAll(roomsTask, toolsTask);
+
+        if (roomsTask.Result.Success)
+        {
+            rooms = roomsTask.Result.Data?.ToList() ?? [];
+        }
+
+        if (toolsTask.Result.Success)
+        {
+            tools = toolsTask.Result.Data?.ToList() ?? [];
+        }
+    }
+
+    private async Task CreateRoom(RoomRequest request)
+    {
+        var response = await RoomService.CreateAsync(request);
+        if (!response.Success || response.Data is null)
+        {
+            return;
+        }
+
+        rooms.Insert(0, response.Data);
+        selectedRoom = response.Data;
         isAdding = false;
         showPanel = true;
     }
 
-    private void UpdateRoom(Room updatedRoom)
+    private async Task UpdateRoom(RoomRequest request)
     {
-        var index = rooms.FindIndex(room => room.Id == updatedRoom.Id);
+        if (selectedRoom is null)
+        {
+            return;
+        }
+
+        var response = await RoomService.UpdateAsync(selectedRoom.Id, request);
+        if (!response.Success || response.Data is null)
+        {
+            return;
+        }
+
+        var savedRoom = response.Data;
+        savedRoom.Tools = selectedRoom.Tools;
+        var index = rooms.FindIndex(room => room.Id == savedRoom.Id);
         if (index >= 0)
         {
-            rooms[index] = updatedRoom;
-            selectedRoom = updatedRoom;
+            rooms[index] = savedRoom;
+            selectedRoom = savedRoom;
         }
 
         isEditing = false;
         showPanel = true;
     }
 
-    private static List<Room> CreateRooms() =>
-    [
-        new() { Id = Guid.CreateVersion7(), Name = "Garage", Description = "Tools, equipment, and storage", Tools =
-            [new() { Id = Guid.CreateVersion7(), Name = "Cordless drill", Description = "18V compact drill", Brand = "Makita" }, new() { Id = Guid.CreateVersion7(), Name = "Step ladder", Description = "6 ft. folding ladder", Brand = "Werner" }] },
-        new() { Id = Guid.CreateVersion7(), Name = "Kitchen", Description = "Cooking and dining essentials", Tools =
-            [new() { Id = Guid.CreateVersion7(), Name = "Stand mixer", Description = "5-quart mixer", Brand = "KitchenAid" }] },
-        new() { Id = Guid.CreateVersion7(), Name = "Living room", Description = "Shared living space", Tools =
-            [new() { Id = Guid.CreateVersion7(), Name = "Projector", Description = "HD home projector", Brand = "Epson" }] },
-        new() { Id = Guid.CreateVersion7(), Name = "Garden shed", Description = "Outdoor and garden equipment", Tools =
-            [new() { Id = Guid.CreateVersion7(), Name = "Pressure washer", Description = "Electric pressure washer", Brand = "Karcher" }, new() { Id = Guid.CreateVersion7(), Name = "Garden trimmer", Description = "Battery-powered trimmer", Brand = "Ryobi" }] },
-        new() { Id = Guid.CreateVersion7(), Name = "Home office", Description = "Work and study area" },
-        new() { Id = Guid.CreateVersion7(), Name = "Utility room", Description = "Cleaning and household supplies" }
-    ];
+    private async Task AssignToolToRoom(Tool tool)
+    {
+        if (selectedRoom is null)
+        {
+            return;
+        }
+
+        var request = new ToolRequest
+        {
+            Name = tool.Name,
+            Description = tool.Description,
+            Brand = tool.Brand,
+            Model = tool.Model,
+            SerialNumber = tool.SerialNumber,
+            Notes = tool.Notes,
+            RoomId = selectedRoom.Id,
+            LentToContactId = tool.LentToContactId,
+            LentAt = tool.LentAt
+        };
+
+        var response = await ToolService.UpdateAsync(tool.Id, request);
+        if (!response.Success)
+        {
+            return;
+        }
+
+        var roomId = selectedRoom.Id;
+        await LoadRoomData();
+        selectedRoom = rooms.FirstOrDefault(room => room.Id == roomId);
+        showPanel = selectedRoom is not null;
+        isAdding = false;
+        isEditing = false;
+    }
 }

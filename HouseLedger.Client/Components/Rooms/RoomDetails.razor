@@ -40,6 +40,16 @@
         </div>
     }
 
+    <div class="room-assign-tool">
+        <MudSelect T="Guid?" Label="Add an existing tool" @bind-Value="selectedToolId" Clearable="true">
+            @foreach (var tool in AssignableTools)
+            {
+                <MudSelectItem T="Guid?" Value="@((Guid?)tool.Id)">@tool.Name</MudSelectItem>
+            }
+        </MudSelect>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Disabled="@(!selectedToolId.HasValue)" OnClick="AssignSelectedTool">Add tool to room</MudButton>
+    </div>
+
     <div class="room-detail-actions">
         <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.Close" OnClick="Close">Close</MudButton>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" OnClick="Edit">Edit room</MudButton>
@@ -51,10 +61,32 @@
     public Room Room { get; set; } = null!;
 
     [Parameter]
+    public IReadOnlyList<Tool> AvailableTools { get; set; } = [];
+
+    [Parameter]
+    public EventCallback<Tool> OnAssignTool { get; set; }
+
+    [Parameter]
     public EventCallback OnEdit { get; set; }
 
     [Parameter]
     public EventCallback OnClose { get; set; }
+
+    private Guid? selectedToolId;
+
+    private IEnumerable<Tool> AssignableTools => AvailableTools.Where(tool => tool.RoomId != Room.Id);
+
+    private async Task AssignSelectedTool()
+    {
+        var tool = AssignableTools.FirstOrDefault(tool => tool.Id == selectedToolId);
+        if (tool is null)
+        {
+            return;
+        }
+
+        await OnAssignTool.InvokeAsync(tool);
+        selectedToolId = null;
+    }
 
     private Task Edit() => OnEdit.InvokeAsync();
 

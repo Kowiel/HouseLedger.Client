@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using HouseLedger.Server.RoomServices;
 
 namespace HouseLedger.Server
 {
@@ -128,6 +129,7 @@ namespace HouseLedger.Server
 
             //Register services
 
+            builder.Services.AddScoped<IRoomService, RoomService>();
             builder.Services.AddScoped<IToolService, ToolService>();
             builder.Services.AddScoped<IUserCRUDService, UserCRUDService>();
             builder.Services.AddScoped<IAuthService, AuthService>();

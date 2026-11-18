@@ -1,4 +1,5 @@
 ﻿@using System.ComponentModel.DataAnnotations
+@using HouseLedger.Shared.DTO.Room
 @using HouseLedger.Shared.Models
 
 <div class="room-editor">
@@ -30,16 +31,15 @@
 
 @code {
     [Parameter]
-    public EventCallback<Room> OnSaved { get; set; }
+    public EventCallback<RoomRequest> OnSaved { get; set; }
 
     [Parameter]
     public EventCallback OnCancel { get; set; }
 
     private RoomForm model = new();
 
-    private Task Save() => OnSaved.InvokeAsync(new Room
+    private Task Save() => OnSaved.InvokeAsync(new RoomRequest
     {
-        Id = Guid.CreateVersion7(),
         Name = model.Name,
         Description = model.Description
     });
